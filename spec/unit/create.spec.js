@@ -1,4 +1,4 @@
-/**
+/*
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
     distributed with this work for additional information
@@ -7,7 +7,7 @@
     "License"); you may not use this file except in compliance
     with the License.  You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing,
     software distributed under the License is distributed on an
@@ -155,10 +155,10 @@ describe('create', function () {
         });
 
         describe('parameter values and defaults', function () {
-            it('should have a default package name of io.cordova.helloCordova', () => {
+            it('should have a default package name of org.apache.cordova.hellocordova', () => {
                 config_mock.packageName.and.returnValue(undefined);
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(create.validatePackageName).toHaveBeenCalledWith('io.cordova.helloCordova');
+                    expect(create.validatePackageName).toHaveBeenCalledWith('org.apache.cordova.hellocordova');
                 });
             });
 
@@ -276,17 +276,17 @@ describe('create', function () {
                 });
             });
 
-            it('should interpolate the project name into strings.xml', () => {
+            it('should interpolate the project name into cdv_strings.xml', () => {
                 config_mock.name.and.returnValue('IncredibleApp');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'strings.xml'), /__NAME__/, 'IncredibleApp');
+                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'cdv_strings.xml'), /__NAME__/, 'IncredibleApp');
                 });
             });
 
-            it('should interpolate the escaped project name into strings.xml', () => {
+            it('should interpolate the escaped project name into cdv_strings.xml', () => {
                 config_mock.name.and.returnValue('<Incredible&App>');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'strings.xml'), /__NAME__/, '&lt;Incredible&amp;App&gt;');
+                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'cdv_strings.xml'), /__NAME__/, '&lt;Incredible&amp;App&gt;');
                 });
             });
 

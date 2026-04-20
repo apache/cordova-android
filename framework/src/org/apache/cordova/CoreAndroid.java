@@ -1,20 +1,20 @@
 /*
-       Licensed to the Apache Software Foundation (ASF) under one
-       or more contributor license agreements.  See the NOTICE file
-       distributed with this work for additional information
-       regarding copyright ownership.  The ASF licenses this file
-       to you under the Apache License, Version 2.0 (the
-       "License"); you may not use this file except in compliance
-       with the License.  You may obtain a copy of the License at
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
-       Unless required by applicable law or agreed to in writing,
-       software distributed under the License is distributed on an
-       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-       KIND, either express or implied.  See the License for the
-       specific language governing permissions and limitations
-       under the License.
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
 */
 
 package org.apache.cordova;
@@ -28,11 +28,16 @@ import org.json.JSONObject;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.os.SystemClock;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
 
 import java.util.HashMap;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcherOwner;
 
 /**
  * This class exposes methods in Cordova that can be called from JavaScript.
@@ -45,7 +50,9 @@ public class CoreAndroid extends CordovaPlugin {
     private CallbackContext messageChannel;
     private PluginResult pendingResume;
     private PluginResult pendingPause;
+    private OnBackPressedCallback backCallback;
     private final Object messageChannelLock = new Object();
+    private final Object backButtonHandlerLock = new Object();
 
     /**
      * Send an event to be fired on the Javascript side.
@@ -63,6 +70,7 @@ public class CoreAndroid extends CordovaPlugin {
     @Override
     public void pluginInitialize() {
         this.initTelephonyReceiver();
+        backCallback = null;
     }
 
     /**
@@ -246,8 +254,65 @@ public class CoreAndroid extends CordovaPlugin {
      * @param override		T=override, F=cancel override
      */
     public void overrideBackbutton(boolean override) {
-        LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
-        webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
+        if (cordova.getActivity() == null) {
+            return;
+        }
+
+        final boolean shouldOverride = override;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (shouldOverride) {
+                    LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
+                    synchronized (backButtonHandlerLock) {
+                        if (backCallback == null) {
+                            backCallback = new OnBackPressedCallback(true) {
+                                @Override
+                                public void handleOnBackPressed() {
+                                    dispatchBackKeyEvent();
+                                }
+                            };
+                            OnBackPressedDispatcherOwner backPressedDispatcherOwner = cordova.getActivity();
+                            backPressedDispatcherOwner.getOnBackPressedDispatcher().addCallback(backPressedDispatcherOwner, backCallback);
+                        }
+                    }
+                } else {
+                    synchronized (backButtonHandlerLock) {
+                        if (backCallback != null) {
+                            backCallback.remove();
+                            backCallback = null;
+                        }
+                    }
+                }
+
+                webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, shouldOverride);
+            }
+        });
+    }
+
+    private void dispatchBackKeyEvent() {
+        // Build a synthetic BACK key press (DOWN + UP) and route it through the WebView.
+        // This lets Cordova's existing key handling fire the JS "backbutton" event.
+        final long eventTime = SystemClock.uptimeMillis();
+        final KeyEvent downEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
+        final KeyEvent upEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, 0);
+
+        final boolean handledDown = webView.getView().dispatchKeyEvent(downEvent);
+        final boolean handledUp = webView.getView().dispatchKeyEvent(upEvent);
+
+        // If either event was consumed, Cordova/WebView already handled back behavior.
+        if (handledDown || handledUp) {
+            return;
+        }
+
+        // Otherwise, delegate to Android's default back dispatcher.
+        // Temporarily disable this callback to avoid recursive re-entry.
+        backCallback.setEnabled(false);
+        try {
+            cordova.getActivity().getOnBackPressedDispatcher().onBackPressed();
+        } finally {
+            backCallback.setEnabled(true);
+        }
     }
 
     /**

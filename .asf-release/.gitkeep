@@ -15,13 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-extends: '@cordova/eslint-config/node'
-
-overrides:
-  - files: [spec/**/*.js]
-    extends: '@cordova/eslint-config/node-tests'
-    rules:
-      prefer-promise-reject-errors: off
-
-  - files: [cordova-js-src/**/*.js]
-    extends: '@cordova/eslint-config/browser'
+# ---
+# This directory is used as apart of the release process.
+# Package tarballs will be generated in stored temporarily
+# within this directory and should not be commited to repo.
+# ---

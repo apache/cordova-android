@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "15.0.0-dev",
+  "version": "15.0.1-dev.0",
   "description": "cordova-android release",
   "types": "./types/index.d.ts",
   "main": "lib/Api.js",
@@ -14,43 +14,43 @@
   "scripts": {
     "prepare": "cordova-js build > templates/project/assets/www/cordova.js",
     "test": "npm run lint && npm run cover && npm run java-unit-tests",
-    "lint": "eslint lib spec test \"templates/cordova/**/!(*.*)\"",
+    "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
-    "cover": "nyc jasmine --config=spec/coverage.json",
+    "cover": "c8 jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "node test/run_java_unit_tests.js"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
-    "android-versions": "^2.1.0",
-    "cordova-common": "^5.0.1",
-    "dedent": "^1.5.3",
+    "android-versions": "^2.1.1",
+    "cordova-common": "^6.0.0",
+    "dedent": "^1.7.1",
     "execa": "^5.1.1",
     "fast-glob": "^3.3.3",
     "is-path-inside": "^3.0.3",
-    "nopt": "^8.1.0",
+    "nopt": "^9.0.0",
     "properties-parser": "^0.6.0",
-    "semver": "^7.7.1",
-    "string-argv": "^0.3.1",
+    "semver": "^7.7.4",
+    "string-argv": "^0.3.2",
     "untildify": "^4.0.0",
-    "which": "^5.0.0"
+    "which": "^6.0.1"
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^5.1.0",
+    "@cordova/eslint-config": "^6.0.1",
+    "c8": "^10.1.3",
     "cordova-js": "^6.1.0",
     "elementtree": "^0.1.7",
-    "jasmine": "^5.6.0",
+    "jasmine": "^6.0.0",
     "jasmine-spec-reporter": "^7.0.0",
-    "nyc": "^17.1.0",
-    "rewire": "^7.0.0",
-    "tmp": "^0.2.3"
+    "rewire": "^9.0.1",
+    "tmp": "^0.2.5"
   },
   "engines": {
-    "node": ">=20.5.0"
+    "node": ">=20.17.0 || >=22.9.0"
   },
-  "nyc": {
+  "c8": {
     "include": [
       "lib"
     ],
