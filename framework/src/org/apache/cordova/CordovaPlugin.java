@@ -416,11 +416,13 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called by the system when the user grants permissions
+     * Called when the user grants permissions.
+     * Forwarded from {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])}.
      *
      * @param requestCode
      * @param permissions
      * @param grantResults
+     * @see https://developer.android.com/reference/android/app/Activity#onRequestPermissionsResult(int,%20java.lang.String[],%20int[])
      * @deprecated Use {@link #onRequestPermissionsResult} instead.
      */
     @Deprecated
@@ -430,11 +432,13 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called by the system when the user grants permissions
+     * Called when the user grants permissions. Do not use it.
+     * This is currently not called by {@link CordovaActivity}, just by {@link PermissionHelper}, which is not used currently.
      *
      * @param requestCode
      * @param permissions
      * @param grantResults
+     * @see https://developer.android.com/reference/android/app/Activity#onRequestPermissionsResult(int,%20java.lang.String[],%20int[])
      */
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
