@@ -1,4 +1,4 @@
-/**
+/*
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
     distributed with this work for additional information
@@ -17,6 +17,7 @@
     under the License.
 */
 
+import groovy.xml.XmlParser
 import java.util.regex.Pattern
 import io.github.g00fy2.versioncompare.Version
 
