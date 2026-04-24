@@ -89,4 +89,27 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
     }
 });
 
+Object.defineProperty(statusBar, 'setContentStyle', {
+    configurable: false,
+    enumerable: false,
+    writable: false,
+    value: function (value) {
+        if (!['default', 'lightcontent'].includes(value)) {
+            throw new TypeError('Invalid status bar content style: ' + value);
+        }
+        const isDefault = value === 'default';
+        if (window.StatusBar) {
+            // try to let the StatusBar plugin handle it
+            if (isDefault) {
+                window.StatusBar.styleDefault();
+            } else {
+                window.StatusBar.styleLightContent();
+            }
+        } else {
+            statusBarVisible = value;
+            exec(null, null, 'SystemBarPlugin', 'setStatusBarContentStyle', [!!isDefault]);
+        }
+    }
+});
+
 module.exports = statusBar;
