@@ -49,7 +49,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.FileProvider;
@@ -70,7 +69,7 @@ public class SystemWebChromeClient extends WebChromeClient {
         void onPermissionSelect(Boolean isGranted);
     }
 
-    private ActivityResultLauncher permissionLauncher;
+    private final ActivityResultLauncher<String[]> permissionLauncher;
     private PermissionListener permissionListener;
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
