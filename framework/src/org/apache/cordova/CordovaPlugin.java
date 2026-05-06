@@ -416,7 +416,11 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called by the system when the user grants permissions
+     * Forwarded system call to {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])}
+     * and from there to the plugin that requested permissions, when the user granted them, denied them,
+     * or when the request was interrupted.
+     * This is a legacy method that will be called if a plugin overrides it,
+     * but new plugins should override {@link #onRequestPermissionsResult} instead.
      *
      * @param requestCode
      * @param permissions
@@ -430,11 +434,14 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called by the system when the user grants permissions
+     * Forwarded system call to {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])}
+     * and from there to the plugin that requested permissions, when the user granted them, denied them,
+     * or when the request was interrupted.
      *
      * @param requestCode
      * @param permissions
      * @param grantResults
+     * @see https://developer.android.com/reference/android/app/Activity#onRequestPermissionsResult(int,%20java.lang.String[],%20int[])
      */
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
