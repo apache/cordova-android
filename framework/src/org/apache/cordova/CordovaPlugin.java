@@ -416,11 +416,14 @@ public class CordovaPlugin {
     }
 
     /**
-     * Forwarded system call to {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])}
-     * and from there to the plugin that requested permissions, when the user granted them, denied them,
-     * or when the request was interrupted.
-     * This is a legacy method that will be called if a plugin overrides it,
-     * but new plugins should override {@link #onRequestPermissionsResult} instead.
+     * Forwarded system call to the plugin when the user grants permissions,
+     * denies them or the request was interrupted.
+     * This is a legacy method and should not be used anymore.
+     * Instead {@link #onRequestPermissionsResult} should be used.
+     * 
+     * Note: The system calls {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])},
+     * which calls {@link CordovaInterfaceImpl#onRequestPermissionsResult(int, String[], int[])},
+     * and finally this method.
      *
      * @param requestCode
      * @param permissions
@@ -434,9 +437,12 @@ public class CordovaPlugin {
     }
 
     /**
-     * Forwarded system call to {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])}
-     * and from there to the plugin that requested permissions, when the user granted them, denied them,
-     * or when the request was interrupted.
+     * Forwarded system call to the plugin when the user grants permissions,
+     * denies them or the request was interrupted.
+     * 
+     * Note: The system calls {@link CordovaActivity#onRequestPermissionsResult(int, String[], int[])},
+     * which calls {@link CordovaInterfaceImpl#onRequestPermissionsResult(int, String[], int[])},
+     * and finally this method.
      *
      * @param requestCode
      * @param permissions
