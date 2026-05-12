@@ -197,6 +197,7 @@ describe('android project handler', function () {
                 spyOn(dummyProject, 'addSystemLibrary');
                 spyOn(dummyProject, 'addSubProject');
                 spyOn(dummyProject, 'addGradleReference');
+                spyOn(dummyProject, 'addAppBuildScriptDependency');
                 common.__set__('copyNewFile', copyNewFileSpy);
             });
 
@@ -240,6 +241,12 @@ describe('android project handler', function () {
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
                 expect(dummyProject.addGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
+            });
+
+            it('Test#013 : should install app buildscript dependency using project.addAppBuildScriptDependency', () => {
+                const framework = { src: 'plugin-dependency', type: 'appBuildScriptDependency' };
+                android.framework.install(framework, dummyPluginInfo, dummyProject);
+                expect(dummyProject.addAppBuildScriptDependency).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
         });
 
@@ -402,6 +409,7 @@ describe('android project handler', function () {
                 spyOn(dummyProject, 'removeSystemLibrary');
                 spyOn(dummyProject, 'removeSubProject');
                 spyOn(dummyProject, 'removeGradleReference');
+                spyOn(dummyProject, 'removeAppBuildScriptDependency');
             });
 
             it('Test#020 : should throw if framework doesn\'t have "src" attribute', function () {
@@ -432,6 +440,12 @@ describe('android project handler', function () {
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(rmSyncSpy).toHaveBeenCalledWith(someString, { recursive: true, force: true });
                 expect(dummyProject.removeGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
+            });
+
+            it('Test#025 : should uninstall app buildscript dependency using project.removeAppBuildScriptDependency', () => {
+                const framework = { src: 'plugin-dependency', type: 'appBuildScriptDependency' };
+                android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
+                expect(dummyProject.removeAppBuildScriptDependency).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
         });
 
