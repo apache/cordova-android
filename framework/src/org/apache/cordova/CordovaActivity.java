@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-import java.io.ObjectInputFilter.Config;
 import java.util.ArrayList;
 import java.util.Locale;
 
