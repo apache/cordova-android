@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import java.io.ObjectInputFilter.Config;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -220,7 +221,7 @@ public class CordovaActivity extends AppCompatActivity {
         // Handle Window Insets
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
             Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+                    WindowInsetsCompat.Type.ime() | WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
             );
 
             boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
