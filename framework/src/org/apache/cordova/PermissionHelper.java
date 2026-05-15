@@ -32,6 +32,7 @@ package org.apache.cordova;
  * @deprecated As of cordova-android 5.0.0, this class is no longer needed and will be removed in a future release.
  * You can call directly into {@link CordovaInterface} methods instead with {@link CordovaPlugin#cordova}.
  */
+@Deprecated
 public class PermissionHelper {
     /**
      * Requests a "dangerous" permission for the application at runtime. This is a helper method
@@ -44,6 +45,7 @@ public class PermissionHelper {
      * @param permission    The permission to be requested
      * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermission(CordovaPlugin, int, String)} instead.
      */
+    @Deprecated
     public static void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
         PermissionHelper.requestPermissions(plugin, requestCode, new String[] {permission});
     }
@@ -59,6 +61,7 @@ public class PermissionHelper {
      * @param permissions   The permissions to be requested
      * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermissions(CordovaPlugin, int, String[])} instead.
      */
+    @Deprecated
     public static void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions) {
         plugin.cordova.requestPermissions(plugin, requestCode, permissions);
     }
@@ -73,6 +76,7 @@ public class PermissionHelper {
      * @return              True if the permission has already been granted and false otherwise
      * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#hasPermission(String)} instead.
      */
+    @Deprecated
     public static boolean hasPermission(CordovaPlugin plugin, String permission) {
         return plugin.cordova.hasPermission(permission);
     }
