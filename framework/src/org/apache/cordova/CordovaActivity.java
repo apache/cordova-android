@@ -220,18 +220,25 @@ public class CordovaActivity extends AppCompatActivity {
         // Handle Window Insets
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
             Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.ime() | WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
             );
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
             boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
             int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
-            int bottom = !canEdgeToEdge && !isFullScreen ? bars.bottom : 0;
             int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
             int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
 
-            FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
-            webViewParams.setMargins(left, top, right, bottom);
-            webView.setLayoutParams(webViewParams);
+            int bottom = 0;
+            if (!isFullScreen) {
+                bottom = !canEdgeToEdge ? Math.max(bars.bottom, ime.bottom) : ime.bottom;
+            }
+
+            if (webViewParams.leftMargin != left || webViewParams.topMargin != top
+                    || webViewParams.rightMargin != right || webViewParams.bottomMargin != bottom) {
+                webViewParams.setMargins(left, top, right, bottom);
+                webView.setLayoutParams(webViewParams);
+            }
 
             FrameLayout.LayoutParams statusBarParams = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
