@@ -18,12 +18,6 @@
 */
 package org.apache.cordova;
 
-import java.util.Arrays;
-
-import org.json.JSONException;
-
-import android.content.pm.PackageManager;
-
 /**
  * This class is permission helper class when compiling against older versions of cordova-android pre 5.0.0
  * and provides reflective methods for permission requesting and checking so that plugins
@@ -48,7 +42,7 @@ public class PermissionHelper {
      * @param requestCode   A requestCode to be passed to the plugin's onRequestPermissionResult()
      *                      along with the result of the permission request
      * @param permission    The permission to be requested
-     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermission()} instead.
+     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermission(CordovaPlugin, int, String)} instead.
      */
     public static void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
         PermissionHelper.requestPermissions(plugin, requestCode, new String[] {permission});
@@ -63,7 +57,7 @@ public class PermissionHelper {
      * @param requestCode   A requestCode to be passed to the plugin's onRequestPermissionResult()
      *                      along with the result of the permissions request
      * @param permissions   The permissions to be requested
-     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermissions()} instead.
+     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermissions(CordovaPlugin, int, String[])} instead.
      */
     public static void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions) {
         plugin.cordova.requestPermissions(plugin, requestCode, permissions);
@@ -77,7 +71,7 @@ public class PermissionHelper {
      * @param plugin        The plugin the permission is being checked against
      * @param permission    The permission to be checked
      * @return              True if the permission has already been granted and false otherwise
-     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#hasPermission()} instead.
+     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#hasPermission(String)} instead.
      */
     public static boolean hasPermission(CordovaPlugin plugin, String permission) {
         return plugin.cordova.hasPermission(permission);
