@@ -222,18 +222,20 @@ public class CordovaActivity extends AppCompatActivity {
             Insets bars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
             );
-            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
             boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
             int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
             int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
             int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
 
-            int bottom = 0;
-            if (!isFullScreen) {
-                bottom = !canEdgeToEdge ? Math.max(bars.bottom, ime.bottom) : ime.bottom;
-            }
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            // When in fullscreen mode, we ignore bottom system insets (like the navigation bar)
+            // to allow the WebView to span the entire screen and avoid being pushed up.
+            int bottom = isFullScreen ? 0 : canEdgeToEdge ? imeInsets.bottom : Math.max(bars.bottom, imeInsets.bottom);
 
+            FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
+            // Only update layout margins if the values have actually changed.
+            // This prevents redundant layout passes and potential infinite layout loops
             if (webViewParams.leftMargin != left || webViewParams.topMargin != top
                     || webViewParams.rightMargin != right || webViewParams.bottomMargin != bottom) {
                 webViewParams.setMargins(left, top, right, bottom);
