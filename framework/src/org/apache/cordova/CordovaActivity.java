@@ -228,13 +228,10 @@ public class CordovaActivity extends AppCompatActivity {
             int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
             int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
 
-            int bottom = 0;
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
             // When in fullscreen mode, we ignore bottom system insets (like the navigation bar)
             // to allow the WebView to span the entire screen and avoid being pushed up.
-            if (!isFullScreen) {
-                bottom = canEdgeToEdge ? imeInsets.bottom : Math.max(bars.bottom, imeInsets.bottom);
-            }
+            int bottom = isFullScreen ? 0 : canEdgeToEdge ? imeInsets.bottom : Math.max(bars.bottom, imeInsets.bottom);
 
             FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
             // Only update layout margins if the values have actually changed.
