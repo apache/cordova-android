@@ -36,6 +36,7 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
+          cache: ''
 
       - name: Setup environment variables
         run: |
