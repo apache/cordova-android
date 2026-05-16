@@ -83,7 +83,7 @@ jobs:
 
       - name: Generate "tgz" npm convenience package
         run: |-
-          npm install
+          npm ci
           NPM_PKG_NAME=$(npm pack --json | jq -r '.[0].filename')
           mv ./.asf-release/$NPM_PKG_NAME ./.asf-release/${NPM_PACKAGE_NAME}.tgz
         env:
