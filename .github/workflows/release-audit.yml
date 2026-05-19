@@ -51,7 +51,7 @@ jobs:
       - name: npm install packages
         run: npm ci
 
-      # Check node package licenses (v2.0.1)
+      # Check node package licenses (v2.1.0)
       - uses: erisu/license-checker-action@04511f4c052b5773f11e1c65b42cda88235c62ae
         with:
           license-config: 'licence_checker.yml'
