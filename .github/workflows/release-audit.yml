@@ -52,7 +52,7 @@ jobs:
         run: npm ci
 
       # Check node package licenses (v2.0.1)
-      - uses: erisu/license-checker-action@99cffa11264fe545fd0baa6c13bca5a00ae608f2
+      - uses: erisu/license-checker-action@04511f4c052b5773f11e1c65b42cda88235c62ae
         with:
           license-config: 'licence_checker.yml'
           include-asf-category-a: true
