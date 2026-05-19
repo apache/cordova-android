@@ -31,10 +31,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24
+          package-manager-cache: false
+          cache: ''
 
       - name: Setup environment variables
         run: |
@@ -68,14 +73,14 @@ jobs:
       - name: Verify Target Release Version
         run: |
           PACKAGE_VERSION=$(jq -r '.version' package.json)
-          if [ $PACKAGE_VERSION != "$TARGET_RELEASE_VERSION" ]; then
+          if [ "$PACKAGE_VERSION" != "$TARGET_RELEASE_VERSION" ]; then
             echo "Mismatch version detected between tag version ($TARGET_RELEASE_VERSION) and package version ($PACKAGE_VERSION)"
             exit 1
           fi
 
           if [ -f "plugin.xml" ]; then
-            PLUGIN_VERSION=$(yq -p=xml -o=json '.plugin.+@version' plugin.xml)
-            if [ $PLUGIN_VERSION != "$TARGET_RELEASE_VERSION" ]; then
+            PLUGIN_VERSION=$(yq -p=xml -o=json '.plugin.+@version' plugin.xml | jq -r .)
+            if [ "$PLUGIN_VERSION" != "$TARGET_RELEASE_VERSION" ]; then
               echo "Mismatch version detected between tag version ($TARGET_RELEASE_VERSION) and plugin version ($PLUGIN_VERSION)"
               exit 1
             fi
@@ -83,7 +88,7 @@ jobs:
 
       - name: Generate "tgz" npm convenience package
         run: |-
-          npm install
+          npm ci
           NPM_PKG_NAME=$(npm pack --json | jq -r '.[0].filename')
           mv ./.asf-release/$NPM_PKG_NAME ./.asf-release/${NPM_PACKAGE_NAME}.tgz
         env:
@@ -142,7 +147,7 @@ jobs:
           CORDOVA_GPG_SECRET_KEY: ${{ secrets.CORDOVA_GPG_SECRET_KEY }}
 
       - name: Upload to Apache Trusted Release (ATR)
-        uses: apache/tooling-actions/upload-to-atr@b7e972c11790ee16eca101900af1b3c7fd1b106e
+        uses: apache/tooling-actions/upload-to-atr@f5f4c0e7ddfbde6b1f8288cef36324c6def68051
         with:
           project: ${{ env.REPO_NAME }}
           version: ${{ env.TARGET_RELEASE_VERSION }}
