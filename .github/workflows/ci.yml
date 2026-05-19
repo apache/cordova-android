@@ -84,7 +84,7 @@ jobs:
       - uses: github/codeql-action/analyze@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
 
       # v4.6.0
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
+      - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2
         if: success()
         with:
           name: ${{ runner.os }} node.js ${{ matrix.node-version }}
