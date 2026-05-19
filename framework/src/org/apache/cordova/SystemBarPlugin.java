@@ -89,6 +89,9 @@ public class SystemBarPlugin extends CordovaPlugin {
             cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
         } else if ("setStatusBarBackgroundColor".equals(action)) {
             cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(args));
+        } else if ("setStatusBarContentStyle".equals(action)) {
+            boolean isDefault = args.getBoolean(0);
+            cordova.getActivity().runOnUiThread(() -> setStatusBarContentStyle(isDefault));
         } else {
             return false;
         }
@@ -142,6 +145,23 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
+     * Allow the app to set the status bar content style from JS API.
+     * If for some reason the statusBarView could not be discovered, it will silently ignore
+     * the change request
+     *
+     * @param defaultStyle should the status bar use the default style?
+     */
+    private void setStatusBarContentStyle(final boolean defaultStyle) {
+        Window window = cordova.getActivity().getWindow();
+        View decorView = window.getDecorView();
+        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, decorView);
+
+        // If defaultStyle is true, use dark icons (light status bar appearance)
+        // If false, use light icons (dark status bar appearance)
+        controllerCompat.setAppearanceLightStatusBars(defaultStyle);
+    }
+
+    /**
      * Attempt to update all system bars (status, navigation and gesture bars) in various points
      * of the apps life cycle.
      * For example:
@@ -163,8 +183,8 @@ public class SystemBarPlugin extends CordovaPlugin {
             statusBarBackgroundColor = overrideStatusBarBackgroundColor;
         } else if (preferences.contains("StatusBarBackgroundColor")) {
             statusBarBackgroundColor = getPreferenceStatusBarBackgroundColor();
-        } else if(preferences.contains("BackgroundColor")){
-            statusBarBackgroundColor =  rootViewBackgroundColor;
+        } else if (preferences.contains("BackgroundColor")) {
+            statusBarBackgroundColor = rootViewBackgroundColor;
         } else {
             statusBarBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
         }
