@@ -20,15 +20,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     cooldown:
-      default-days: 6
+      default-days: 4
     schedule:
-      interval: "cron"
-      cronjob: "0 1 * * *"
+      interval: "daily" # Every weekday, Monday to Friday
 
   - package-ecosystem: "npm"
     directory: "/"
     cooldown:
-      default-days: 6
+      default-days: 4
     schedule:
-      interval: "cron"
-      cronjob: "0 1 * * *"
+      interval: "weekly" # By default on a Monday
