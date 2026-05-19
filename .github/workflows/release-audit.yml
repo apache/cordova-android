@@ -39,7 +39,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      # Check license headers (v2.0.0)
+      # Check license headers (v3.0.0)
       - uses: erisu/apache-rat-action@30c94d10ed21e6f6fd5590dc5c158f58cae7a0dd
 
       # Setup environment with node
