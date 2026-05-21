@@ -42,7 +42,7 @@ import org.json.JSONException;
 public class SystemBarPlugin extends CordovaPlugin {
     static final String PLUGIN_NAME = "SystemBarPlugin";
 
-    static final int INVALID_COLOR = -1;
+    static final int INVALID_COLOR = Integer.MIN_VALUE;
 
     // Internal variables
     private Context context;
