@@ -39,15 +39,15 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.Objects;
+
 public class SystemBarPlugin extends CordovaPlugin {
     static final String PLUGIN_NAME = "SystemBarPlugin";
-
-    static final int INVALID_COLOR = Integer.MIN_VALUE;
 
     // Internal variables
     private Context context;
     private Resources resources;
-    private int overrideStatusBarBackgroundColor = INVALID_COLOR;
+    private Integer overrideStatusBarBackgroundColor = null;
 
     private boolean canEdgeToEdge = false;
 
@@ -129,13 +129,11 @@ public class SystemBarPlugin extends CordovaPlugin {
             int r = argbVals.getInt(1);
             int g = argbVals.getInt(2);
             int b = argbVals.getInt(3);
-            String hexColor = String.format("#%02X%02X%02X%02X", a, r, g, b);
+            overrideStatusBarBackgroundColor = parseColorFromString(String.format("#%02X%02X%02X%02X", a, r, g, b));
 
-            int parsedColor = parseColorFromString(hexColor);
-            if (parsedColor == INVALID_COLOR) return;
-
-            overrideStatusBarBackgroundColor = parsedColor;
-            updateStatusBar(overrideStatusBarBackgroundColor);
+            if (overrideStatusBarBackgroundColor != null) {
+                updateStatusBar(overrideStatusBarBackgroundColor);
+            }
         } catch (JSONException e) {
             // Silently skip
         }
@@ -145,26 +143,26 @@ public class SystemBarPlugin extends CordovaPlugin {
      * Attempt to update all system bars (status, navigation and gesture bars) in various points
      * of the apps life cycle.
      * For example:
-     *  1. Device configurations between (E.g. between dark and light mode)
-     *  2. User resumes the app
-     *  3. App transitions from SplashScreen Theme to App's Theme
+     * 1. Device configurations between (E.g. between dark and light mode)
+     * 2. User resumes the app
+     * 3. App transitions from SplashScreen Theme to App's Theme
      */
     private void updateSystemBars() {
         // Update Root View Background Color
-        int rootViewBackgroundColor = getPreferenceBackgroundColor();
-        if (rootViewBackgroundColor == INVALID_COLOR) {
+        Integer rootViewBackgroundColor = getPreferenceBackgroundColor();
+        if (rootViewBackgroundColor == null) {
             rootViewBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
         }
         updateRootView(rootViewBackgroundColor);
 
         // Update StatusBar Background Color
-        int statusBarBackgroundColor;
-        if (overrideStatusBarBackgroundColor != INVALID_COLOR) {
+        Integer statusBarBackgroundColor;
+        if (overrideStatusBarBackgroundColor != null) {
             statusBarBackgroundColor = overrideStatusBarBackgroundColor;
         } else if (preferences.contains("StatusBarBackgroundColor")) {
             statusBarBackgroundColor = getPreferenceStatusBarBackgroundColor();
-        } else if(preferences.contains("BackgroundColor")){
-            statusBarBackgroundColor =  rootViewBackgroundColor;
+        } else if (preferences.contains("BackgroundColor")) {
+            statusBarBackgroundColor = rootViewBackgroundColor;
         } else {
             statusBarBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
         }
@@ -261,34 +259,31 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
-     * Returns the StatusBarBackgroundColor preference value.
-     * If the value is missing or fails to parse, it will attempt to try to guess the background
-     * color by extracting from the apps R.color.cdv_background_color or determine from the uiModes.
-     * If all fails, the color normally used in light mode is returned.
+     * Returns the StatusBarBackgroundColor preference value or {@link #getUiModeColor()} as fallback.
      *
-     * @return int
+     * @return Integer
      */
-    private int getPreferenceStatusBarBackgroundColor() {
+    private Integer getPreferenceStatusBarBackgroundColor() {
         String colorString = preferences.getString("StatusBarBackgroundColor", null);
-
-        int parsedColor = parseColorFromString(colorString);
-        if (parsedColor != INVALID_COLOR) return parsedColor;
-
-        return getUiModeColor(); // fallback
+        return Objects.requireNonNullElse(parseColorFromString(colorString), getUiModeColor());
     }
 
     /**
      * Returns the BackgroundColor preference value.
-     * If missing or fails to decode, it will return INVALID_COLOR (-1).
+     * If the value is missing or fails to decode, null is returned.
      *
-     * @return int
+     * @return Integer|null
      */
-    private int getPreferenceBackgroundColor() {
+    private Integer getPreferenceBackgroundColor() {
+        if (!preferences.contains("BackgroundColor")) {
+            return null;
+        }
+
         try {
-            return preferences.getInteger("BackgroundColor", INVALID_COLOR);
+            return preferences.getInteger("BackgroundColor", 0);
         } catch (NumberFormatException e) {
             LOG.e(PLUGIN_NAME, "Invalid background color argument. Example valid string: '0x00000000'");
-            return INVALID_COLOR;
+            return null;
         }
     }
 
@@ -354,20 +349,20 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
-     * Parse color string that would be provided by app developers.
-     * If the color string is empty or unable to parse, it will return INVALID_COLOR (-1).
+     * Parses a color string provided by app developers.
+     * If the color string is empty or unable to parse, null is returned.
      *
      * @param colorPref hex string value, #AARRGGBB or #RRGGBB
-     * @return int
+     * @return Integer|null
      */
-    private int parseColorFromString(final String colorPref) {
-        if (colorPref.isEmpty()) return INVALID_COLOR;
+    private Integer parseColorFromString(final String colorPref) {
+        if (colorPref == null || colorPref.isEmpty()) return null;
 
         try {
             return Color.parseColor(colorPref);
         } catch (IllegalArgumentException ignore) {
             LOG.e(PLUGIN_NAME, "Invalid color hex code. Valid format: #RRGGBB or #AARRGGBB");
-            return INVALID_COLOR;
+            return null;
         }
     }
 }
