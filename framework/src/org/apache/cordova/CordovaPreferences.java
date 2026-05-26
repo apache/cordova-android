@@ -74,7 +74,10 @@ public class CordovaPreferences {
         name = name.toLowerCase(Locale.ENGLISH);
         String value = prefs.get(name);
         if (value != null) {
-            // Use Integer.decode() can't handle it if the highest bit is set.
+            // Some 32-bit hex values (for example, 0x80000000) are valid int bit patterns
+            // but exceed Integer.MAX_VALUE when read as positive numbers. Integer.decode()
+            // rejects such values with NumberFormatException, so decode as long first and
+            // cast to int to preserve the intended 32-bit value.
             return (int)(long)Long.decode(value);
         }
         return defaultValue;
