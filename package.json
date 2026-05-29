@@ -30,7 +30,7 @@
     "execa": "^5.1.1",
     "fast-glob": "^3.3.3",
     "is-path-inside": "^3.0.3",
-    "nopt": "^9.0.0",
+    "nopt": "^10.0.0",
     "properties-parser": "^0.6.0",
     "semver": "^7.7.4",
     "string-argv": "^0.3.2",
