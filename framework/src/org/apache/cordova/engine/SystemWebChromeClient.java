@@ -73,21 +73,16 @@ public class SystemWebChromeClient extends WebChromeClient {
     private PermissionListener permissionListener;
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
-    private long MAX_QUOTA = 100 * 1024 * 1024;
     protected final SystemWebViewEngine parentEngine;
 
     // the video progress view
     private View mVideoProgressView;
 
-    private CordovaDialogsHelper dialogsHelper;
-    private Context appContext;
-
-    private WebChromeClient.CustomViewCallback mCustomViewCallback;
-    private View mCustomView;
+    private final CordovaDialogsHelper dialogsHelper;
 
     public SystemWebChromeClient(SystemWebViewEngine parentEngine) {
         this.parentEngine = parentEngine;
-        appContext = parentEngine.webView.getContext();
+        Context appContext = parentEngine.webView.getContext();
         dialogsHelper = new CordovaDialogsHelper(appContext);
         permissionLauncher = parentEngine.cordova.getActivity().registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
             if (permissionListener != null) {
@@ -105,13 +100,11 @@ public class SystemWebChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-        dialogsHelper.showAlert(message, new CordovaDialogsHelper.Result() {
-            @Override public void gotResult(boolean success, String value) {
-                if (success) {
-                    result.confirm();
-                } else {
-                    result.cancel();
-                }
+        dialogsHelper.showAlert(message, (success, value) -> {
+            if (success) {
+                result.confirm();
+            } else {
+                result.cancel();
             }
         });
         return true;
@@ -122,14 +115,11 @@ public class SystemWebChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-        dialogsHelper.showConfirm(message, new CordovaDialogsHelper.Result() {
-            @Override
-            public void gotResult(boolean success, String value) {
-                if (success) {
-                    result.confirm();
-                } else {
-                    result.cancel();
-                }
+        dialogsHelper.showConfirm(message, (success, value) -> {
+            if (success) {
+                result.confirm();
+            } else {
+                result.cancel();
             }
         });
         return true;
@@ -150,14 +140,11 @@ public class SystemWebChromeClient extends WebChromeClient {
         if (handledRet != null) {
             result.confirm(handledRet);
         } else {
-            dialogsHelper.showPrompt(message, defaultValue, new CordovaDialogsHelper.Result() {
-                @Override
-                public void gotResult(boolean success, String value) {
-                    if (success) {
-                        result.confirm(value);
-                    } else {
-                        result.cancel();
-                    }
+            dialogsHelper.showPrompt(message, defaultValue, (success, value) -> {
+                if (success) {
+                    result.confirm(value);
+                } else {
+                    result.cancel();
                 }
             });
         }
@@ -173,6 +160,7 @@ public class SystemWebChromeClient extends WebChromeClient {
             long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
     {
         LOG.d(LOG_TAG, "onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
+        long MAX_QUOTA = 100 * 1024 * 1024;
         quotaUpdater.updateQuota(MAX_QUOTA);
     }
 
@@ -181,8 +169,8 @@ public class SystemWebChromeClient extends WebChromeClient {
      *
      * <p>This also checks for the Geolocation Plugin and requests permission from the application  to use Geolocation.</p>
      *
-     * @param origin
-     * @param callback
+     * @param origin The origin of the web content attempting to use the Geolocation API.
+     * @param callback The callback to use to set the permission state for the origin.
      */
     @Override
     public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
@@ -296,7 +284,7 @@ public class SystemWebChromeClient extends WebChromeClient {
                     // Handle result
                     Uri[] result = null;
                     if (resultCode == Activity.RESULT_OK) {
-                        List<Uri> uris = new ArrayList<Uri>();
+                        List<Uri> uris = new ArrayList<>();
 
                         if (intent != null && intent.getData() != null) { // single file
                             LOG.v(LOG_TAG, "Adding file (single): " + intent.getData());
@@ -317,8 +305,8 @@ public class SystemWebChromeClient extends WebChromeClient {
                         }
 
                         if (!uris.isEmpty()) {
-                            LOG.d(LOG_TAG, "Receive file chooser URL: " + uris.toString());
-                            result = uris.toArray(new Uri[uris.size()]);
+                            LOG.d(LOG_TAG, "Receive file chooser URL: " + uris);
+                            result = uris.toArray(new Uri[0]);
                         }
                     }
                     filePathsCallback.onReceiveValue(result);
@@ -333,14 +321,12 @@ public class SystemWebChromeClient extends WebChromeClient {
 
     private File createTempFile(Context context) throws IOException {
         // Create an image file name
-        File tempFile = File.createTempFile("temp", ".jpg", context.getCacheDir());
-        return tempFile;
+        return File.createTempFile("temp", ".jpg", context.getCacheDir());
     }
 
     private Uri createUriForFile(Context context, File tempFile) throws IOException {
         String appId = context.getPackageName();
-        Uri uri = FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
-        return uri;
+        return FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
     }
 
     @Override
