@@ -60,28 +60,29 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
         statusBarScript.style.color = value;
         var rgbStr = window.getComputedStyle(statusBarScript).getPropertyValue('color');
 
-        if (!rgbStr.match(/^rgb/)) { return; }
-
-        var rgbVals = rgbStr.match(/\d+/g).map(function (v) { return parseInt(v, 10); });
-
-        if (rgbVals.length < 3) {
+        if (!rgbStr.match(/^rgb/)) {
             return;
-        } else if (rgbVals.length === 3) {
-            rgbVals = [255].concat(rgbVals);
         }
 
-        // TODO: Use `padStart(2, '0')` once SDK 24 is dropped.
-        const padRgb = (val) => {
-            const hex = val.toString(16);
-            return hex.length === 1 ? '0' + hex : hex;
-        };
-        const a = padRgb(rgbVals[0]);
-        const r = padRgb(rgbVals[1]);
-        const g = padRgb(rgbVals[2]);
-        const b = padRgb(rgbVals[3]);
-        const hexStr = '#' + a + r + g + b;
+        var rgbVals = rgbStr.match(/[\d.]+/g).map(function (v, i) { return (i < 3) ? parseInt(v, 10) : parseFloat(v); });
+        if (rgbVals.length < 3) {
+            return;
+        }
 
         if (window.StatusBar) {
+            // try to let the StatusBar plugin handle it
+            // TODO: Use `padStart(2, '0')` once SDK 24 is dropped.
+            const padRgb = (val) => {
+                const hex = val.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            };
+
+            const r = padRgb(rgbVals[0]);
+            const g = padRgb(rgbVals[1]);
+            const b = padRgb(rgbVals[2]);
+            const a = padRgb(255 * (rgbVals[3] !== undefined ? rgbVals[3] : 1.0));
+
+            const hexStr = '#' + a + r + g + b;
             window.StatusBar.backgroundColorByHexString(hexStr);
         } else {
             exec(null, null, 'SystemBarPlugin', 'setStatusBarBackgroundColor', rgbVals);

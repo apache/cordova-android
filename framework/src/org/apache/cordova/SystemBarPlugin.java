@@ -121,19 +121,17 @@ public class SystemBarPlugin extends CordovaPlugin {
      * If the supplied ARGB is invalid or fails to parse, it will silently ignore
      * the change request.
      *
-     * @param argbVals {A, R, G, B}
+     * @param argbVals {R, G, B, A}
      */
     private void setStatusBarBackgroundColor(JSONArray argbVals) {
         try {
-            int a = argbVals.getInt(0);
-            int r = argbVals.getInt(1);
-            int g = argbVals.getInt(2);
-            int b = argbVals.getInt(3);
-            overrideStatusBarBackgroundColor = parseColorFromString(String.format("#%02X%02X%02X%02X", a, r, g, b));
+            int r = argbVals.getInt(0);
+            int g = argbVals.getInt(1);
+            int b = argbVals.getInt(2);
+            int a = Math.round(255 * (float)argbVals.optDouble(3, 1.0));
 
-            if (overrideStatusBarBackgroundColor != null) {
-                updateStatusBar(overrideStatusBarBackgroundColor);
-            }
+            overrideStatusBarBackgroundColor = Color.argb(a, r, g, b);
+            updateStatusBar(overrideStatusBarBackgroundColor);
         } catch (JSONException e) {
             // Silently skip
         }
