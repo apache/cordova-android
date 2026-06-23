@@ -28,7 +28,7 @@ document.head.appendChild(statusBarScript);
 
 /**
  * Sets the visibility of the status bar, which will only work if Android EdgeToEdge is disabled.
- * If cordova-plugin-statusbar the call will be forwarded to `window.StatusBar.show` or
+ * If cordova-plugin-statusbar is used, the call will be forwarded to `window.StatusBar.show` or
  * `window.StatusBar.hide` of the plugin.
  */
 Object.defineProperty(statusBar, 'visible', {
