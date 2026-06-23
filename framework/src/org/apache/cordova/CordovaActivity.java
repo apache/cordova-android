@@ -121,7 +121,9 @@ public class CordovaActivity extends AppCompatActivity {
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
 
-        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
+        // Android Edge to Edge was introduced in Android 15 and can only be used from there on
+        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
         String logLevel = preferences.getString("loglevel", "ERROR");
         LOG.setLogLevel(logLevel);

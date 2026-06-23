@@ -55,7 +55,9 @@ public class SystemBarPlugin extends CordovaPlugin {
     protected void pluginInitialize() {
         context = cordova.getContext();
         resources = context.getResources();
-        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
+        // Android Edge to Edge was introduced in Android 15 and can only be used from there on
+        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
     }
 
     @Override
