@@ -23,7 +23,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.net.http.SslError;
 import android.webkit.ClientCertRequest;
 import android.webkit.HttpAuthHandler;
@@ -42,7 +41,6 @@ import org.apache.cordova.AuthenticationToken;
 import org.apache.cordova.CordovaClientCertRequest;
 import org.apache.cordova.CordovaHttpAuthHandler;
 import org.apache.cordova.CordovaPluginPathHandler;
-import org.apache.cordova.CordovaResourceApi;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginManager;
 
@@ -383,24 +381,6 @@ public class SystemWebViewClient extends WebViewClient {
         this.authenticationTokens.clear();
     }
 
-    private static boolean needsContentUrlFix(Uri uri) {
-        return "content".equals(uri.getScheme());
-    }
-
-    private static boolean needsSpecialsInAssetUrlFix(Uri uri) {
-        if (CordovaResourceApi.getUriType(uri) != CordovaResourceApi.URI_TYPE_ASSET) {
-            return false;
-        }
-        if (uri.getQuery() != null || uri.getFragment() != null) {
-            return true;
-        }
-
-        if (!uri.toString().contains("%")) {
-            return false;
-        }
-
-        return false;
-    }
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
