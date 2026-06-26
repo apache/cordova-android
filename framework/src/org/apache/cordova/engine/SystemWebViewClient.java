@@ -32,6 +32,7 @@ import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ServiceWorkerClient;
 import android.webkit.ServiceWorkerController;
 import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -45,8 +46,6 @@ import org.apache.cordova.CordovaResourceApi;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginManager;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
 
@@ -137,13 +136,12 @@ public class SystemWebViewClient extends WebViewClient {
      * is about to be loaded in the current WebView.
      *
      * @param view          The WebView that is initiating the callback.
-     * @param url           The url to be loaded.
+     * @param request       The request to be loaded.
      * @return              true to override, false for default behavior
      */
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        return parentEngine.client.onNavigationAttempt(url);
+    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+        return parentEngine.client.onNavigationAttempt(request.getUrl().toString());
     }
 
     /**
@@ -247,13 +245,16 @@ public class SystemWebViewClient extends WebViewClient {
      * The errorCode parameter corresponds to one of the ERROR_* constants.
      *
      * @param view          The WebView that is initiating the callback.
-     * @param errorCode     The error code corresponding to an ERROR_* value.
-     * @param description   A String describing the error.
-     * @param failingUrl    The url that failed to load.
+     * @param request       The request that caused the error.
+     * @param error         The error object.
      */
     @Override
-    @SuppressWarnings("deprecation")
-    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+    public void onReceivedError(WebView view,
+                                WebResourceRequest request,
+                                WebResourceError error) {
+        int errorCode = error.getErrorCode();
+        String description = error.getDescription().toString();
+        String failingUrl = request.getUrl().toString();
         // Ignore error due to stopLoading().
         if (!isCurrentlyLoading) {
             return;
@@ -270,7 +271,7 @@ public class SystemWebViewClient extends WebViewClient {
                 view.goBack();
                 return;
             } else {
-                super.onReceivedError(view, errorCode, description, failingUrl);
+                super.onReceivedError(view, request, error);
             }
         }
         parentEngine.client.onReceivedError(errorCode, description, failingUrl);
@@ -380,38 +381,6 @@ public class SystemWebViewClient extends WebViewClient {
      */
     public void clearAuthenticationTokens() {
         this.authenticationTokens.clear();
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        try {
-            // Check the against the allow list and lock out access to the WebView directory
-            // Changing this will cause problems for your application
-            if (!parentEngine.pluginManager.shouldAllowRequest(url)) {
-                LOG.w(TAG, "URL blocked by allow list: " + url);
-                // Results in a 404.
-                return new WebResourceResponse("text/plain", "UTF-8", null);
-            }
-
-            CordovaResourceApi resourceApi = parentEngine.resourceApi;
-            Uri origUri = Uri.parse(url);
-            // Allow plugins to intercept WebView requests.
-            Uri remappedUri = resourceApi.remapUri(origUri);
-
-            if (!origUri.equals(remappedUri) || needsSpecialsInAssetUrlFix(origUri) || needsContentUrlFix(origUri)) {
-                CordovaResourceApi.OpenForReadResult result = resourceApi.openForRead(remappedUri, true);
-                return new WebResourceResponse(result.mimeType, "UTF-8", result.inputStream);
-            }
-            // If we don't need to special-case the request, let the browser load it.
-            return null;
-        } catch (IOException e) {
-            if (!(e instanceof FileNotFoundException)) {
-                LOG.e(TAG, "Error occurred while loading a file (returning a 404).", e);
-            }
-            // Results in a 404.
-            return new WebResourceResponse("text/plain", "UTF-8", null);
-        }
     }
 
     private static boolean needsContentUrlFix(Uri uri) {
