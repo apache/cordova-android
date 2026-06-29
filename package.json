@@ -27,7 +27,7 @@
     "android-versions": "^2.1.1",
     "cordova-common": "^6.0.0",
     "dedent": "^1.7.1",
-    "execa": "^5.1.1",
+    "execa": "^9.6.1",
     "fast-glob": "^3.3.3",
     "is-path-inside": "^3.0.3",
     "nopt": "^9.0.0",
