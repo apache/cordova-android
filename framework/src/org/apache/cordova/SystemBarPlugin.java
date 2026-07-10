@@ -80,10 +80,6 @@ public class SystemBarPlugin extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if(canEdgeToEdge) {
-            return false;
-        }
-
         if ("setStatusBarVisible".equals(action)) {
             boolean visible = args.getBoolean(0);
             cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
