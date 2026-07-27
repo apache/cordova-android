@@ -48,6 +48,7 @@ public class SystemBarPlugin extends CordovaPlugin {
     private Context context;
     private Resources resources;
     private Integer overrideStatusBarBackgroundColor = null;
+    private boolean hasNavigationBarBackgroundColorOverride = false;
 
     private boolean canEdgeToEdge = false;
 
@@ -182,9 +183,11 @@ public class SystemBarPlugin extends CordovaPlugin {
     private void updateRootView(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
-        // Set the root view's background color. Works on SDK 36+
-        View root = cordova.getActivity().findViewById(android.R.id.content);
-        if (root != null) root.setBackgroundColor(bgColor);
+        // Keep root background controlled by navigation override once it has been explicitly set.
+        if (!hasNavigationBarBackgroundColorOverride) {
+            View root = cordova.getActivity().findViewById(android.R.id.content);
+            if (root != null) root.setBackgroundColor(bgColor);
+        }
 
         // Automatically set the font and icon color of the system bars based on background color.
         boolean isBackgroundColorLight;
@@ -204,13 +207,15 @@ public class SystemBarPlugin extends CordovaPlugin {
                 }
             }
         }
-        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
-        controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
+        if (!hasNavigationBarBackgroundColorOverride) {
+            WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
+            controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.setNavigationBarColor(bgColor);
-        } else {
-            window.setNavigationBarColor(Color.BLACK);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                window.setNavigationBarColor(bgColor);
+            } else {
+                window.setNavigationBarColor(Color.BLACK);
+            }
         }
     }
 
@@ -373,6 +378,7 @@ public class SystemBarPlugin extends CordovaPlugin {
          try {
             if (Build.VERSION.SDK_INT >= 21) {
                 if (argbVals != null && argbVals.length() >= 3) {
+                    hasNavigationBarBackgroundColorOverride = true;
                     int r = argbVals.getInt(0);
                     int g = argbVals.getInt(1);
                     int b = argbVals.getInt(2);
@@ -382,6 +388,10 @@ public class SystemBarPlugin extends CordovaPlugin {
                     int opaqueNavigationBarColor = Color.rgb(r, g, b);
                     boolean useLightNavigationBarIcons = isColorLight(Color.rgb(r, g, b));
                     boolean shouldUseTransparentNavigationBar = Color.alpha(navigationBarColor) == 0;
+
+                    // Set the root view's background color.
+                    View root = cordova.getActivity().findViewById(android.R.id.content);
+                    if (root != null) root.setBackgroundColor(opaqueNavigationBarColor);
 
                     final Window window = cordova.getActivity().getWindow();
                     final View decorView = window.getDecorView();
