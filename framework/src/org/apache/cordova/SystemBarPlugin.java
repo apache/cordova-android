@@ -85,6 +85,8 @@ public class SystemBarPlugin extends CordovaPlugin {
             cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
         } else if ("setStatusBarBackgroundColor".equals(action)) {
             cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(args));
+        } else if ("setNavigationBarBackgroundColor".equals(action)) {
+            cordova.getActivity().runOnUiThread(() -> setNavigationBarBackgroundColor(args));
         } else {
             return false;
         }
@@ -357,6 +359,64 @@ public class SystemBarPlugin extends CordovaPlugin {
         } catch (IllegalArgumentException ignore) {
             LOG.e(PLUGIN_NAME, "Invalid color hex code. Valid format: #RRGGBB or #AARRGGBB");
             return null;
+        }
+    }
+
+    /**
+     * Allow the app to override the navigation bar background color from JS API.
+     * If the supplied ARGB is invalid or fails to parse, it will silently ignore
+     * the change request.
+     *
+     * @param argbVals {R, G, B, A}
+     */
+    private void setNavigationBarBackgroundColor(JSONArray argbVals) {
+         try {
+            if (Build.VERSION.SDK_INT >= 21) {
+                if (argbVals != null && argbVals.length() >= 3) {
+                    int r = argbVals.getInt(0);
+                    int g = argbVals.getInt(1);
+                    int b = argbVals.getInt(2);
+                    int a = Math.round(255 * (float)argbVals.optDouble(3, 1.0));
+
+                    int navigationBarColor = Color.argb(a, r, g, b);
+                    int opaqueNavigationBarColor = Color.rgb(r, g, b);
+                    boolean useLightNavigationBarIcons = isColorLight(Color.rgb(r, g, b));
+                    boolean shouldUseTransparentNavigationBar = Color.alpha(navigationBarColor) == 0;
+
+                    final Window window = cordova.getActivity().getWindow();
+                    final View decorView = window.getDecorView();
+                    int uiOptions = decorView.getSystemUiVisibility();
+
+                    // 0x80000000 FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+                    // 0x00000010 SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                    // 0x00000200 FLAG_LAYOUT_NO_LIMITS
+
+                    uiOptions = uiOptions | 0x80000000;
+
+                    if(Build.VERSION.SDK_INT >= 26) {
+                        WindowInsetsControllerCompat windowInsetsControllerCompat = WindowCompat.getInsetsController(window, decorView);
+                        if(useLightNavigationBarIcons) {
+                            windowInsetsControllerCompat.setAppearanceLightNavigationBars(true);
+                        } else {
+                            windowInsetsControllerCompat.setAppearanceLightNavigationBars(false);
+                        }
+                    } else {
+                        uiOptions = uiOptions & ~0x00000010;
+                    }
+
+                    if(Build.VERSION.SDK_INT >= 30 && shouldUseTransparentNavigationBar) {
+                        uiOptions = uiOptions | 0x00000200; // window.addFlags(0x00000200);
+                    } else {
+                        uiOptions = uiOptions & ~0x00000200; // window.clearFlags(0x00000200);
+                    }
+
+                    decorView.setSystemUiVisibility(uiOptions);
+                    window.setNavigationBarColor(Build.VERSION.SDK_INT < 30 ? opaqueNavigationBarColor : navigationBarColor);
+                }
+            }
+
+        } catch (JSONException e) {
+            // Silently skip
         }
     }
 }
