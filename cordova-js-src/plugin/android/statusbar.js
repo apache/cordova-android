@@ -103,29 +103,4 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
     }
 });
 
-/**
- * Sets the background color of the navigation bar, this will only work if Android old devices or if gesture navigation is disabled (3 button navigation).
- * Supports valid CSS color values, e.g. `rebeccapurple`, `#RRGGBBAA`, `rgb(255 0 153)`.
- */
-Object.defineProperty(statusBar, 'setNavigationBarBackgroundColor', {
-    configurable: false,
-    enumerable: false,
-    writable: false,
-    value: function (value) {
-        statusBarScript.style.color = value;
-        var rgbStr = window.getComputedStyle(statusBarScript).getPropertyValue('color');
-
-        if (!rgbStr.match(/^rgb/)) {
-            return;
-        }
-
-        var rgbVals = rgbStr.match(/[\d.]+/g).map(function (v, i) { return (i < 3) ? parseInt(v, 10) : parseFloat(v); });
-        if (rgbVals.length < 3) {
-            return;
-        }
-
-        exec(null, null, 'SystemBarPlugin', 'setNavigationBarBackgroundColor', rgbVals);
-    }
-});
-
 module.exports = statusBar;
