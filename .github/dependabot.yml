@@ -16,17 +16,38 @@
 # under the License.
 
 version: 2
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     cooldown:
-      default-days: 4
+      default-days: 5
+      semver-major-days: 14
     schedule:
-      interval: "daily" # Every weekday, Monday to Friday
+      interval: "weekly" # Every Monday
+    groups:
+      gh-actions-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
 
   - package-ecosystem: "npm"
     directory: "/"
     cooldown:
-      default-days: 4
+      default-days: 5
+      semver-major-days: 14
     schedule:
-      interval: "weekly" # By default on a Monday
+      interval: "weekly" # Every Monday
+    groups:
+      npm-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      npm-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
