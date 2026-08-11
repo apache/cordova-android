@@ -223,7 +223,8 @@ public class CordovaActivity extends AppCompatActivity {
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
             );
 
-            boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
+            boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE
+                    && insets.isVisible(WindowInsetsCompat.Type.statusBars());
             int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
             int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
             int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
