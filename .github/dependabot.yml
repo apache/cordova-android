@@ -22,7 +22,6 @@ updates:
     directory: "/"
     cooldown:
       default-days: 5
-      semver-major-days: 14
     schedule:
       interval: "weekly" # Every Monday
     groups:
