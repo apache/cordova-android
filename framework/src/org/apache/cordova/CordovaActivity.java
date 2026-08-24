@@ -107,6 +107,7 @@ public class CordovaActivity extends AppCompatActivity {
 
     private boolean canEdgeToEdge = false;
     private boolean isFullScreen = false;
+    private boolean statusBarOverlaysWebView = false;
 
     /**
      * Called when the activity is first created.
@@ -122,6 +123,7 @@ public class CordovaActivity extends AppCompatActivity {
         loadConfig();
 
         canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
+        statusBarOverlaysWebView = preferences.getBoolean("StatusBarOverlaysWebView", true);
 
         String logLevel = preferences.getString("loglevel", "ERROR");
         LOG.setLogLevel(logLevel);
@@ -224,7 +226,8 @@ public class CordovaActivity extends AppCompatActivity {
             );
 
             boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
-            int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
+            int statusBarHeight = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
+            int top = statusBarOverlaysWebView ? 0 : statusBarHeight;
             int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
             int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
 
@@ -244,7 +247,7 @@ public class CordovaActivity extends AppCompatActivity {
 
             FrameLayout.LayoutParams statusBarParams = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    top,
+                    statusBarHeight,
                     Gravity.TOP
             );
             statusBarView.setLayoutParams(statusBarParams);
