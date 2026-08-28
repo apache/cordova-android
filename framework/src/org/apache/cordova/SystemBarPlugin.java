@@ -34,6 +34,7 @@ import android.widget.FrameLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import org.json.JSONArray;
@@ -101,6 +102,16 @@ public class SystemBarPlugin extends CordovaPlugin {
      * @param visible should the status bar be visible?
      */
     private void setStatusBarVisible(final boolean visible) {
+        Window window = cordova.getActivity().getWindow();
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
+        if (visible) {
+            controller.show(WindowInsetsCompat.Type.statusBars());
+        } else {
+            // Reveal the hidden bar temporarily as an overlay when swiped from the top.
+            controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            controller.hide(WindowInsetsCompat.Type.statusBars());
+        }
+
         View statusBar = getStatusBarView(webView);
         if (statusBar != null) {
             statusBar.setVisibility(visible ? View.VISIBLE : View.GONE);
