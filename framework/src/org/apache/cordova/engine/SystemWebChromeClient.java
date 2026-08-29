@@ -32,7 +32,9 @@ import android.content.Context;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.View;
@@ -51,6 +53,7 @@ import android.widget.RelativeLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
 import org.apache.cordova.CordovaDialogsHelper;
@@ -357,4 +360,15 @@ public class SystemWebChromeClient extends WebChromeClient {
     public void destroyLastDialog(){
         dialogsHelper.destroyLastDialog();
     }
+
+    /*
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void onReceivedThemeColor(WebView view, Color color) {
+        parentEngine.pluginManager.postMessage("onReceivedThemeColor", color.toArgb());
+    }
+
+    public void onViewportFitChanged(WebView view, int viewportFit) {
+        parentEngine.pluginManager.postMessage("onViewportFitChanged", viewportFit);
+    }
+    */
 }
