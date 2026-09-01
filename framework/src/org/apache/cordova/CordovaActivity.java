@@ -216,6 +216,14 @@ public class CordovaActivity extends AppCompatActivity {
         // Create StatusBar view that will overlay the top inset
         View statusBarView = new View(this);
         statusBarView.setTag("statusBarView");
+        // Start with a height of 0. The inset listener below sizes the view to the status bar height, but if the window
+        // insets never reach the root layout (observed on Android 8.0 where the decor consumes them), the view would
+        // otherwise keep FrameLayout's default MATCH_PARENT params and cover the whole WebView.
+        statusBarView.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                Gravity.TOP
+        ));
 
         // Handle Window Insets
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
