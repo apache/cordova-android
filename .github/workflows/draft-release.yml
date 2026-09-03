@@ -148,7 +148,7 @@ jobs:
           CORDOVA_GPG_SECRET_KEY: ${{ secrets.CORDOVA_GPG_SECRET_KEY }}
 
       - name: Upload to Apache Trusted Release (ATR)
-        uses: apache/tooling-actions/upload-to-atr@f5f4c0e7ddfbde6b1f8288cef36324c6def68051
+        uses: apache/tooling-actions/upload-to-atr@fa721a0b176d713807b574da721b96545b587eea
         with:
           project: ${{ env.REPO_NAME }}
           version: ${{ env.TARGET_RELEASE_VERSION }}
