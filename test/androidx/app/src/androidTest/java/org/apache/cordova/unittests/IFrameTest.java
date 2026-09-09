@@ -71,6 +71,7 @@ public class IFrameTest {
         onWebView().withElement(findElement(Locator.ID, "google_maps")).perform(webClick());
         sleep(WEBVIEW_LOAD_DELAY);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run()
             {
                 String url = cordovaWebView.getUrl();
@@ -80,6 +81,7 @@ public class IFrameTest {
         sleep(WEBVIEW_LOAD_DELAY);
         onWebView().withElement(findElement(Locator.ID, "javascript_load")).perform(webClick());
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run()
             {
                 String url = cordovaWebView.getUrl();
@@ -90,6 +92,7 @@ public class IFrameTest {
         //Espresso will kill the application and not trigger the backHistory method, which correctly
         //navigates the iFrame history.  backHistory is tied to the back button.
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run()
             {
                 assertTrue(cordovaWebView.backHistory());
