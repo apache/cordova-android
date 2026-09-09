@@ -29,6 +29,8 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,12 +44,15 @@ import android.view.WindowManager;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -89,6 +94,11 @@ public class CordovaActivity extends AppCompatActivity {
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
 
+    // These are intentionally package-internal visible
+    static final int VIEWPORT_FIT_AUTO = 0;
+    static final int VIEWPORT_FIT_CONTAIN = 1;
+    static final int VIEWPORT_FIT_COVER = 2;
+
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
@@ -104,9 +114,26 @@ public class CordovaActivity extends AppCompatActivity {
     protected CordovaInterfaceImpl cordovaInterface;
 
     private SplashScreen splashScreen;
+    private View statusBarBackgroundView = null;
 
-    private boolean canEdgeToEdge = false;
     private boolean isFullScreen = false;
+
+    private int viewportFit = VIEWPORT_FIT_AUTO;
+
+    /**
+     * The theme color for the system bars, as defined by the web content
+     * currently loaded in the web view. This will be the preferred color for
+     * the system bars, with higher precedence than the default colors defined
+     * in config.xml.
+     */
+    private @ColorInt int statusBarWebViewColor = Color.TRANSPARENT;
+
+    /**
+     * The color for the system bars as explicitly set using a JavaScript API
+     * method. This will override any other inferred colors for the system
+     * bars.
+     */
+    private @ColorInt int statusBarBackgroundColor = Color.TRANSPARENT;
 
     /**
      * Called when the activity is first created.
@@ -121,7 +148,6 @@ public class CordovaActivity extends AppCompatActivity {
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
 
-        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
 
         String logLevel = preferences.getString("loglevel", "ERROR");
         LOG.setLogLevel(logLevel);
@@ -194,8 +220,8 @@ public class CordovaActivity extends AppCompatActivity {
         Config.parser = parser;
     }
 
-    //Suppressing warnings in AndroidStudio
-    @SuppressWarnings({"deprecation", "ResourceType"})
+    //Suppressing warnings in Android Studio
+    @SuppressWarnings({"Deprecation", "ResourceType"})
     protected void createViews() {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
@@ -214,33 +240,51 @@ public class CordovaActivity extends AppCompatActivity {
         ));
 
         // Create StatusBar view that will overlay the top inset
-        View statusBarView = new View(this);
-        statusBarView.setTag("statusBarView");
+        this.statusBarBackgroundView = new View(this);
+        this.statusBarBackgroundView.setTag("statusBarView");
         // Start with a height of 0. The inset listener below sizes the view to the status bar height, but if the window
         // insets never reach the root layout (observed on Android 8.0 where the decor consumes them), the view would
         // otherwise keep FrameLayout's default MATCH_PARENT params and cover the whole WebView.
-        statusBarView.setLayoutParams(new FrameLayout.LayoutParams(
+        this.statusBarBackgroundView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 0,
                 Gravity.TOP
         ));
+        this.statusBarBackgroundView.setBackgroundColor(this.getStatusBarBackgroundColor());
 
         // Handle Window Insets
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
-            );
-
-            boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE
-                    && insets.isVisible(WindowInsetsCompat.Type.statusBars());
-            int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
-            int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
-            int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
-
+            Window window = getWindow();
+            int types = WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
+            Insets bars = insets.getInsets(types);
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
-            // When in fullscreen mode, we ignore bottom system insets (like the navigation bar)
-            // to allow the WebView to span the entire screen and avoid being pushed up.
-            int bottom = isFullScreen ? 0 : canEdgeToEdge ? imeInsets.bottom : Math.max(bars.bottom, imeInsets.bottom);
+
+            boolean canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
+            boolean viewportCover = this.viewportFit == VIEWPORT_FIT_COVER
+                    || (this.viewportFit == VIEWPORT_FIT_AUTO && canEdgeToEdge)
+                    || this.isFullScreen;
+
+            boolean isStatusBarVisible = this.statusBarBackgroundView.getVisibility() != View.GONE
+                    && insets.isVisible(WindowInsetsCompat.Type.statusBars());
+
+            int top = (!isStatusBarVisible || viewportCover) ? 0 : bars.top;
+            int left = viewportCover ? 0 : bars.left;
+            int right = viewportCover ? 0 : bars.right;
+
+            // We don't want the keyboard to push the webview up, so we force the bottom inset to 0 when the keyboard is showing.
+            int bottom = imeInsets.bottom > 0 ? 0 : (viewportCover ? 0 : bars.bottom);
+
+            int uiOptions = window.getDecorView().getSystemUiVisibility();
+            if (viewportCover) {
+                uiOptions |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+            } else {
+                uiOptions &= ~WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+            }
+            window.getDecorView().setSystemUiVisibility(uiOptions);
+            window.setNavigationBarColor(Color.TRANSPARENT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.setNavigationBarContrastEnforced(true);
+            }
 
             FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
             // Only update layout margins if the values have actually changed.
@@ -256,14 +300,19 @@ public class CordovaActivity extends AppCompatActivity {
                     top,
                     Gravity.TOP
             );
-            statusBarView.setLayoutParams(statusBarParams);
+            this.statusBarBackgroundView.setLayoutParams(statusBarParams);
 
+            if (!viewportCover) {
+                // We need to consume the insets because we've padded around them
+                return new WindowInsetsCompat.Builder(insets).setInsets(types, Insets.NONE).build();
+            }
             return insets;
         });
 
         rootLayout.addView(webView);
-        rootLayout.addView(statusBarView);
+        rootLayout.addView(this.statusBarBackgroundView);
 
+        rootLayout.setId(android.R.id.content);
         setContentView(rootLayout);
         rootLayout.post(() -> ViewCompat.requestApplyInsets(rootLayout));
         webView.requestFocusFromTouch();
@@ -545,6 +594,8 @@ public class CordovaActivity extends AppCompatActivity {
      * @return Object or null
      */
     public Object onMessage(String id, Object data) {
+        final CordovaActivity me = this;
+
         if ("onReceivedError".equals(id)) {
             JSONObject d = (JSONObject) data;
             try {
@@ -552,6 +603,19 @@ public class CordovaActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        } else if (id.equals("onViewportFitChanged")) {
+            this.viewportFit = (int) data;
+
+            me.runOnUiThread(() -> {
+                View rootLayout = me.findViewById(android.R.id.content);
+                rootLayout.post(() -> ViewCompat.requestApplyInsets(rootLayout));
+            });
+        } else if (id.equals("onReceivedThemeColor")) {
+            this.statusBarWebViewColor = (int) data;
+            me.runOnUiThread(me::updateStatusBarColors);
+        } else if (id.equals("setStatusBarBackgroundColor")) {
+            this.statusBarBackgroundColor = (int) data;
+            me.runOnUiThread(me::updateStatusBarColors);
         } else if ("exit".equals(id)) {
             finish();
         }
@@ -619,5 +683,71 @@ public class CordovaActivity extends AppCompatActivity {
      */
     protected boolean showInitialSplashScreen() {
         return true;
+    }
+
+    protected @ColorInt int getStatusBarBackgroundColor() {
+        if (this.statusBarBackgroundColor != Color.TRANSPARENT) {
+            // Forced overridden color from the JS API
+            return this.statusBarBackgroundColor;
+        } else if (this.statusBarWebViewColor != Color.TRANSPARENT) {
+            // The value of the web content's theme-color
+            return this.statusBarWebViewColor;
+        } else {
+            int colorId;
+            Resources resources = getResources();
+
+            // The StatusBarBackgroundColor preference value
+            colorId = resources.getIdentifier("cdv_statusbar_background_color", "color", getPackageName());
+            if (colorId != 0) {
+                return ContextCompat.getColor(this, colorId);
+            }
+
+            // The BackgroundColor preference value
+            colorId = resources.getIdentifier("cdv_background_color", "color", getPackageName());
+            if (colorId != 0) {
+                return ContextCompat.getColor(this, colorId);
+            }
+
+            // The system fallback value
+            // (using hex values instead of "android.R.color" for backwards compatibility)
+            if ((resources.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES) {
+                // If night mode: "#121318" (android.R.color.system_background_dark)
+                return 0xFF121318;
+            } else {
+                // If day mode: "#FAF8FF" (android.R.color.system_background_light)
+                return 0xFFFAF8FF;
+            }
+        }
+    }
+
+
+    /**
+     * Determines if the supplied color's appearance is light.
+     *
+     * @param color color
+     * @return boolean value true is returned when the color is light.
+     */
+    private boolean isColorLight(@ColorInt int color) {
+        if (color == Color.TRANSPARENT) {
+            // Return true if we're not in dark/night mode
+            return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        double r = Color.red(color) / 255.0;
+        double g = Color.green(color) / 255.0;
+        double b = Color.blue(color) / 255.0;
+        double luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        return luminance > 0.5;
+    }
+
+    private void updateStatusBarColors() {
+        @ColorInt int bgColor = this.getStatusBarBackgroundColor();
+        this.statusBarBackgroundView.setBackgroundColor(bgColor);
+
+        Window window = getWindow();
+        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
+
+        // Automatically set the font and icon color of the system bars based on background color.
+        controllerCompat.setAppearanceLightStatusBars(isColorLight(bgColor));
     }
 }
