@@ -231,7 +231,7 @@ public class SystemWebChromeClient extends WebChromeClient {
         Intent fileIntent = fileChooserParams.createIntent();
 
         // Check if multiple-select is specified
-        Boolean selectMultiple = false;
+        boolean selectMultiple = false;
         if (fileChooserParams.getMode() == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
             selectMultiple = true;
         }

@@ -560,10 +560,10 @@ public class PluginManager {
         CordovaPlugin ret = null;
         try {
             Class<?> c = null;
-            if ((className != null) && !("".equals(className))) {
+            if (className != null && !className.isBlank()) {
                 c = Class.forName(className);
             }
-            if (c != null & CordovaPlugin.class.isAssignableFrom(c)) {
+            if (c != null && CordovaPlugin.class.isAssignableFrom(c)) {
                 ret = (CordovaPlugin) c.getDeclaredConstructor().newInstance();
             }
         } catch (Exception e) {
