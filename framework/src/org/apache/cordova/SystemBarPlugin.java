@@ -28,7 +28,6 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.Window;
-import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 
 import androidx.core.content.ContextCompat;
@@ -202,18 +201,8 @@ public class SystemBarPlugin extends CordovaPlugin {
         } else {
             isBackgroundColorLight = isColorLight(bgColor);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowInsetsController controller = window.getInsetsController();
-            if (controller != null) {
-                int appearance = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
-                if (isBackgroundColorLight) {
-                    controller.setSystemBarsAppearance(0, appearance);
-                } else {
-                    controller.setSystemBarsAppearance(appearance, appearance);
-                }
-            }
-        }
         WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
+        controllerCompat.setAppearanceLightStatusBars(isBackgroundColorLight);
         controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
