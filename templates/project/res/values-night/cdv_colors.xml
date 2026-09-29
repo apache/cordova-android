@@ -18,6 +18,5 @@
  under the License.
 -->
 <resources>
-    <color name="cdv_background_color">#121318</color>
-    <color name="cdv_splashscreen_background">@color/cdv_background_color</color>
+    <color name="cdv_system_background_color">#FF121318</color>
 </resources>
