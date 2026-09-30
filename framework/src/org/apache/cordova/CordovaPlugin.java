@@ -154,13 +154,8 @@ public class CordovaPlugin {
         }
         CommandFactory factory = this.commandFactories.get(action);
         if (factory != null) {
-            try {
-                factory.create(args, callbackContext);
-            } catch (Exception e) {
-                callbackContext.error(e.getMessage());
-            } finally {
-                return true;
-            }
+            factory.create(args, callbackContext);
+            return true;
         }
         return false;
     }
