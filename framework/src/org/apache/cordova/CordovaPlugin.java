@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import org.apache.cordova.CordovaAction;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
@@ -36,6 +37,10 @@ import android.webkit.WebView;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Plugins must extend this class and override one of the execute methods.
@@ -45,6 +50,7 @@ public class CordovaPlugin {
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
     private String serviceName;
+    private Map<String, CommandFactory> commandFactories;
 
     /**
      * Call this after constructing to initialize the plugin.
@@ -143,6 +149,19 @@ public class CordovaPlugin {
      * @return                Whether the action was valid.
      */
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        if (this.commandFactories == null) {
+            this.commandFactories = createCommandFactories();
+        }
+        CommandFactory factory = this.commandFactories.get(action);
+        if (factory != null) {
+            try {
+                factory.create(args, callbackContext);
+            } catch (Exception e) {
+                callbackContext.error(e.getMessage());
+            } finally {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -478,5 +497,36 @@ public class CordovaPlugin {
      */
     public boolean onRenderProcessGone(final WebView view, RenderProcessGoneDetail detail) {
         return false;
+    }
+
+    private Map<String, CommandFactory> createCommandFactories() {
+        Map<String, CommandFactory> factories = new HashMap<>();
+
+        for (final Method method : this.getClass().getDeclaredMethods()) {
+            if (method.isAnnotationPresent(CordovaAction.class)) {
+                CordovaAction cordovaAction = method.getAnnotation(CordovaAction.class);
+                String actionName = cordovaAction.name();
+                if (actionName.isEmpty()) {
+                    actionName = method.getName();
+                }
+                // Bypass Java language access checks to significantly speed up reflection overhead in ART
+                method.setAccessible(true);
+                // Use Java 11 lambda syntax which will be safely desugared by D8 for minSdkVersion >= 24
+                factories.put(actionName, (args, callbackContext) -> {
+                    try {
+                        method.invoke(this, args, callbackContext);
+                    } catch (InvocationTargetException e) {
+                        callbackContext.error(e.getTargetException().getMessage());
+                    } catch (IllegalAccessException e) {
+                        callbackContext.error(e.getMessage());
+                    }
+                });
+            }
+        }
+        return factories;
+    }
+
+    protected interface CommandFactory {
+        void create(CordovaArgs args, CallbackContext callbackContext);
     }
 }
