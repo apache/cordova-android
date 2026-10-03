@@ -34,7 +34,7 @@
     "properties-parser": "^0.6.0",
     "semver": "^7.7.4",
     "string-argv": "^0.3.2",
-    "untildify": "^4.0.0",
+    "untildify": "^6.0.0",
     "which": "^6.0.1"
   },
   "devDependencies": {
