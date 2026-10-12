@@ -23,6 +23,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -64,6 +65,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private NativeToJsMessageQueue nativeToJsMessageQueue;
     private EngineClient engineClient = new EngineClient();
     private boolean hasPausedEver;
+    private long lastBackCallbackTime = -1;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
@@ -403,7 +405,32 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
 
     @Override
+    public boolean handleBackButton() {
+        long callbackTime = SystemClock.uptimeMillis();
+        boolean handled = performBackButtonAction();
+        if (handled) {
+            lastBackCallbackTime = callbackTime;
+        }
+        return handled;
+    }
+
+    private boolean performBackButtonAction() {
+        if (mCustomView != null) {
+            hideCustomView();
+            return true;
+        }
+        if (boundKeyCodes.contains(KeyEvent.KEYCODE_BACK)) {
+            sendJavascriptEvent("backbutton");
+            return true;
+        }
+        return engine.goBack();
+    }
+
+    @Override
     public void setButtonPlumbedToJs(int keyCode, boolean override) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && !override) {
+            lastBackCallbackTime = -1;
+        }
         switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
             case KeyEvent.KEYCODE_VOLUME_UP:
@@ -612,20 +639,21 @@ public class CordovaWebViewImpl implements CordovaWebView {
         @Override
         public Boolean onDispatchKeyEvent(KeyEvent event) {
             int keyCode = event.getKeyCode();
-            boolean isBackButton = keyCode == KeyEvent.KEYCODE_BACK;
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (isBackButton && mCustomView != null) {
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                // Android 16 may deliver the original key after its callback has
+                // already handled back. Consume that key without a second action.
+                if (event.getEventTime() <= lastBackCallbackTime) {
                     return true;
-                } else if (boundKeyCodes.contains(keyCode)) {
-                    return true;
-                } else if (isBackButton) {
-                    return engine.canGoBack();
                 }
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                if (isBackButton && mCustomView != null) {
-                    hideCustomView();
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    return mCustomView != null || boundKeyCodes.contains(keyCode) || engine.canGoBack();
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    return performBackButtonAction();
+                }
+            } else if (boundKeyCodes.contains(keyCode)) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     return true;
-                } else if (boundKeyCodes.contains(keyCode)) {
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     String eventName = null;
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -640,16 +668,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
                         case KeyEvent.KEYCODE_MENU:
                             eventName = "menubutton";
                             break;
-                        case KeyEvent.KEYCODE_BACK:
-                            eventName = "backbutton";
-                            break;
                     }
                     if (eventName != null) {
                         sendJavascriptEvent(eventName);
                         return true;
                     }
-                } else if (isBackButton) {
-                    return engine.goBack();
                 }
             }
             return null;

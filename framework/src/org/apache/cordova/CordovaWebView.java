@@ -57,6 +57,13 @@ public interface CordovaWebView {
 
     boolean backHistory();
 
+    /**
+     * Handle a back-navigation callback, dismissing a custom view, notifying a
+     * JavaScript listener, or navigating WebView history, in that order.
+     * Call on the UI thread. Returns whether Cordova handled the action.
+     */
+    boolean handleBackButton();
+
     void handlePause(boolean keepRunning);
 
     void onNewIntent(Intent intent);
