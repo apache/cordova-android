@@ -258,10 +258,10 @@ public class CordovaActivity extends AppCompatActivity {
             );
             statusBarView.setLayoutParams(statusBarParams);
 
-            // Consume the portion of the insets already accounted for by the webview's margins so the
-            // webview (and its `env(safe-area-inset-*)` CSS values) don't also report insets for space it
-            // no longer overlaps. Any side left un-consumed (e.g. edge-to-edge or fullscreen) still reports
-            // its real inset since the webview genuinely extends beneath that system bar.
+            // Subtract the margins already applied to the WebView from every inset type before dispatch.
+            // This prevents CSS env(safe-area-inset-*) from reporting space excluded by those margins.
+            // It also reduces IME insets by the bottom margin used to accommodate the keyboard.
+            // Any inset portion beyond the applied margins remains available to child views.
             return insets.inset(left, top, right, bottom);
         });
 
