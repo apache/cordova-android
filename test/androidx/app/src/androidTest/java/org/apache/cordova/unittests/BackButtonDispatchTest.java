@@ -42,6 +42,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * A back press can reach Cordova as a back-press callback and as a back key event, and
+ * on some Android versions (for example Android 16) one press arrives as both. These
+ * tests make sure each back press is handled once. The callback is triggered through
+ * the activity's OnBackPressedDispatcher, the key event through the WebView's
+ * dispatchKeyEvent. The test page listens to "backbutton" and counts the events.
+ */
 @RunWith(AndroidJUnit4.class)
 public class BackButtonDispatchTest {
     @Rule
@@ -67,6 +74,7 @@ public class BackButtonDispatchTest {
         assertTrue(activity.getWebInterface().isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK));
     }
 
+    /** One back press arriving as a callback and then as a key event fires "backbutton" once. */
     @Test
     public void callbackAndOriginalKeyFireOnlyOnce() throws Throwable {
         activityRule.runOnUiThread(() -> {
@@ -83,6 +91,7 @@ public class BackButtonDispatchTest {
         assertFalse(activity.isFinishing());
     }
 
+    /** Separate back presses in quick succession are all handled, none is dropped as a duplicate. */
     @Test
     public void consecutiveCallbacksAreNotDebounced() throws Throwable {
         activityRule.runOnUiThread(() -> {
@@ -93,6 +102,10 @@ public class BackButtonDispatchTest {
         assertEventCount(3);
     }
 
+    /**
+     * A back key event that is newer than the last callback is a new back press, not a
+     * duplicate, so it still fires "backbutton".
+     */
     @Test
     public void laterLegacyKeyStillFires() throws Throwable {
         activityRule.runOnUiThread(() -> activity.getOnBackPressedDispatcher().onBackPressed());
@@ -107,6 +120,7 @@ public class BackButtonDispatchTest {
         assertEventCount(2);
     }
 
+    /** A back press that closes a custom view does not also fire "backbutton" for its duplicate key event. */
     @Test
     public void closingCustomViewDoesNotAlsoFireBackbutton() throws Throwable {
         AtomicBoolean customViewHidden = new AtomicBoolean();
@@ -122,22 +136,28 @@ public class BackButtonDispatchTest {
         assertEventCount(0);
     }
 
+    /** Without a "backbutton" listener, handleBackButton() goes back in the WebView history. */
     @Test
     public void sharedHandlerNavigatesHistoryWithoutListener() throws Throwable {
         removeBackListener();
         activityRule.runOnUiThread(() -> webView.loadUrl("https://localhost/backbuttondispatch/second.html"));
         assertNotNull(activity.onPageFinishedUrl.poll(10, TimeUnit.SECONDS));
         awaitValue("window.backHistoryPageReady === true", "true");
+        activity.onPageFinishedUrl.clear();
         activityRule.runOnUiThread(() -> {
             assertTrue("History size=" + webView.copyBackForwardList().getSize()
                     + ", index=" + webView.copyBackForwardList().getCurrentIndex()
                     + ", URL=" + webView.getUrl(), activity.getWebInterface().canGoBack());
             assertTrue(activity.getWebInterface().handleBackButton());
         });
+        // Evaluating JavaScript while the back navigation is still in progress can lose the result.
+        assertEquals("https://localhost/backbuttondispatch/index.html",
+                activity.onPageFinishedUrl.poll(10, TimeUnit.SECONDS));
         awaitValue("window.backTestReady === true", "true");
         assertEventCount(0);
     }
 
+    /** With no listener, custom view or history, handleBackButton() returns false so Android handles the press. */
     @Test
     public void sharedHandlerLeavesUnhandledBackToAndroid() throws Throwable {
         removeBackListener();

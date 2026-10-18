@@ -65,6 +65,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private NativeToJsMessageQueue nativeToJsMessageQueue;
     private EngineClient engineClient = new EngineClient();
     private boolean hasPausedEver;
+    // A back press can reach us as a back-press callback (handleBackButton) and as back key
+    // events (EngineClient.onDispatchKeyEvent). Depending on the Android version, one or
+    // both arrive. On Android 16 both do: the callback runs when the key is released, just
+    // before its key-up event. This is the time when the callback last handled a back
+    // press, or -1 if none, so that key-up can be ignored.
     private long lastBackCallbackTime = -1;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
@@ -404,6 +409,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         appPlugin.fireJavascriptEvent(event);
     }
 
+    /**
+     * Called by the Android back-press callback. Performs the back action and, if it was
+     * handled, records the time so the duplicate key event of the same press is ignored.
+     */
     @Override
     public boolean handleBackButton() {
         long callbackTime = SystemClock.uptimeMillis();
@@ -414,15 +423,27 @@ public class CordovaWebViewImpl implements CordovaWebView {
         return handled;
     }
 
+    /**
+     * Performs the first applicable back action: dismiss a custom view, fire the
+     * JavaScript "backbutton" event if the back button is overridden, or navigate back in
+     * the WebView history. Called by {@link #handleBackButton()} (back-press callback) and
+     * by the back key handling in {@link EngineClient#onDispatchKeyEvent(KeyEvent)}
+     * (back key event).
+     *
+     * @return true if an action was performed, false if Android should handle the back action
+     */
     private boolean performBackButtonAction() {
+        // 1. A custom view (for example a full-screen video) is showing: close it.
         if (mCustomView != null) {
             hideCustomView();
             return true;
         }
+        // 2. The app listens to the "backbutton" event: let JavaScript decide what to do.
         if (boundKeyCodes.contains(KeyEvent.KEYCODE_BACK)) {
             sendJavascriptEvent("backbutton");
             return true;
         }
+        // 3. Otherwise go back in the WebView history. Returns false if there is none.
         return engine.goBack();
     }
 
@@ -640,8 +661,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         public Boolean onDispatchKeyEvent(KeyEvent event) {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                // Android 16 may deliver the original key after its callback has
-                // already handled back. Consume that key without a second action.
+                // On Android 16, one back press reaches us twice: the back callback runs
+                // when the key is released, just before the key-up event of the same press
+                // arrives here. Skip that key-up (an event not newer than the callback)
+                // so back is handled only once.
                 if (event.getEventTime() <= lastBackCallbackTime) {
                     return true;
                 }

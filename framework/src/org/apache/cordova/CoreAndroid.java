@@ -289,12 +289,26 @@ public class CoreAndroid extends CordovaPlugin {
         });
     }
 
+    /**
+     * Called by the back-press callback registered in {@link #overrideBackbutton(boolean)},
+     * so it only runs while the back button is overridden. The JavaScript side enables the
+     * override when the first "backbutton" event listener is added and disables it when
+     * the last one is removed.
+     *
+     * <p>Lets the web view handle the back press first. Only if it reports the press as
+     * unhandled is the press passed on to Android's default handling. Normally this does
+     * not happen while the override is active, because the JavaScript "backbutton" event
+     * handles it.</p>
+     */
     private void handleBackPressed() {
+        // Let Cordova handle the back press first: close a custom view, fire the JS
+        // "backbutton" event, or go back in the WebView history. If it did, we are done.
         if (webView.handleBackButton()) {
             return;
         }
 
-        // Delegate unhandled back actions without re-entering this callback.
+        // Cordova did nothing, so pass the back press on to Android's default handling.
+        // This callback is disabled meanwhile, otherwise the dispatcher would call it again.
         backCallback.setEnabled(false);
         try {
             cordova.getActivity().getOnBackPressedDispatcher().onBackPressed();
