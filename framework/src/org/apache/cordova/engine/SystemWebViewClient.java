@@ -207,9 +207,10 @@ public class SystemWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
-        // The first document has no previous bridge to invalidate. On older WebViews,
-        // its gap_init prompt can arrive before this callback; resetting here would
-        // disable the bridge that document just initialized.
+        // The first document has no previous bridge to invalidate. Reproduced on
+        // Android 7.1.1 (API 25), Google WebView 55.0.2883.91: gap_init can arrive
+        // before this callback, so resetting would disable the new document's bridge.
+        // The full affected Android/WebView version range has not been established.
         if (hasStartedPage) {
             parentEngine.bridge.reset();
         }
