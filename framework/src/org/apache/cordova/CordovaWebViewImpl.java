@@ -543,6 +543,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
 
     protected class EngineClient implements CordovaWebViewEngine.Client {
+        private boolean hasStartedPage;
+
         @Override
         public void clearLoadTimeoutTimer() {
             loadUrlTimeout++;
@@ -551,8 +553,13 @@ public class CordovaWebViewImpl implements CordovaWebView {
         @Override
         public void onPageStarted(String newUrl) {
             LOG.d(TAG, "onPageDidNavigate(" + newUrl + ")");
-            boundKeyCodes.clear();
-            pluginManager.onReset();
+            // Plugins are already initialized for the first document. Its JavaScript
+            // may have run before an older WebView delivers onPageStarted.
+            if (hasStartedPage) {
+                boundKeyCodes.clear();
+                pluginManager.onReset();
+            }
+            hasStartedPage = true;
             pluginManager.postMessage("onPageStarted", newUrl);
         }
 

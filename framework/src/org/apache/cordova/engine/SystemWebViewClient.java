@@ -66,6 +66,7 @@ public class SystemWebViewClient extends WebViewClient {
     private final WebViewAssetLoader assetLoader;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
+    private boolean hasStartedPage;
 
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
@@ -206,8 +207,13 @@ public class SystemWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
-        // Flush stale messages & reset plugins.
-        parentEngine.bridge.reset();
+        // The first document has no previous bridge to invalidate. On older WebViews,
+        // its gap_init prompt can arrive before this callback; resetting here would
+        // disable the bridge that document just initialized.
+        if (hasStartedPage) {
+            parentEngine.bridge.reset();
+        }
+        hasStartedPage = true;
         parentEngine.client.onPageStarted(url);
     }
 
