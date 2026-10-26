@@ -31,6 +31,7 @@ import android.view.Window;
 import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 
+import androidx.annotation.ColorInt;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -40,15 +41,12 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.Objects;
-
 public class SystemBarPlugin extends CordovaPlugin {
     static final String PLUGIN_NAME = "SystemBarPlugin";
 
     // Internal variables
     private Context context;
     private Resources resources;
-    private Integer overrideStatusBarBackgroundColor = null;
 
     private boolean canEdgeToEdge = false;
 
@@ -85,7 +83,22 @@ public class SystemBarPlugin extends CordovaPlugin {
             boolean visible = args.getBoolean(0);
             cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
         } else if ("setStatusBarBackgroundColor".equals(action)) {
-            cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(args));
+            @ColorInt int statusBarBackgroundColor = colorIntFromJson(args);
+            webView.getPluginManager().postMessage("setStatusBarBackgroundColor", statusBarBackgroundColor);
+        } else if ("_setMetaThemeColor".equals(action)) {
+            @ColorInt int metaThemeColor = colorIntFromJson(args);
+            webView.getPluginManager().postMessage("onReceivedThemeColor", metaThemeColor);
+        } else if ("_setViewportFit".equals(action)) {
+            int viewportFit = CordovaActivity.VIEWPORT_FIT_AUTO;
+            String value = args.optString(0, "auto");
+
+            if ("contain".equals(value)) {
+                viewportFit = CordovaActivity.VIEWPORT_FIT_CONTAIN;
+            } else if ("cover".equals(value)) {
+                viewportFit = CordovaActivity.VIEWPORT_FIT_COVER;
+            }
+
+            webView.getPluginManager().postMessage("onViewportFitChanged", viewportFit);
         } else {
             return false;
         }
@@ -124,24 +137,18 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
-     * Allow the app to override the status bar background color from JS API.
-     * If the supplied ARGB is invalid or fails to parse, it will silently ignore
-     * the change request.
-     *
-     * @param argbVals {R, G, B, A}
+     * Converts a JSON array of RGBA components to an Android int color.
+     * @param argbVals An array of RGB int values and an (optional) alpha float value.
+     * @return An Android int color.
+     * @throws JSONException if parsing fails.
      */
-    private void setStatusBarBackgroundColor(JSONArray argbVals) {
-        try {
-            int r = argbVals.getInt(0);
-            int g = argbVals.getInt(1);
-            int b = argbVals.getInt(2);
-            int a = Math.round(255 * (float)argbVals.optDouble(3, 1.0));
+    private @ColorInt int colorIntFromJson(JSONArray argbVals) throws JSONException {
+        int r = argbVals.getInt(0);
+        int g = argbVals.getInt(1);
+        int b = argbVals.getInt(2);
+        int a = Math.round(255 * (float)argbVals.optDouble(3, 1.0));
 
-            overrideStatusBarBackgroundColor = Color.argb(a, r, g, b);
-            updateStatusBar(overrideStatusBarBackgroundColor);
-        } catch (JSONException e) {
-            // Silently skip
-        }
+        return Color.argb(a, r, g, b);
     }
 
     /**
@@ -159,20 +166,6 @@ public class SystemBarPlugin extends CordovaPlugin {
             rootViewBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
         }
         updateRootView(rootViewBackgroundColor);
-
-        // Update StatusBar Background Color
-        Integer statusBarBackgroundColor;
-        if (overrideStatusBarBackgroundColor != null) {
-            statusBarBackgroundColor = overrideStatusBarBackgroundColor;
-        } else if (preferences.contains("StatusBarBackgroundColor")) {
-            statusBarBackgroundColor = getPreferenceStatusBarBackgroundColor();
-        } else if (preferences.contains("BackgroundColor")) {
-            statusBarBackgroundColor = rootViewBackgroundColor;
-        } else {
-            statusBarBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
-        }
-
-        updateStatusBar(statusBarBackgroundColor);
     }
 
     /**
@@ -224,53 +217,17 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
-     * Updates the statusBarView background color with the supplied color int.
-     * It will also determine if the background color is light or dark to properly adjust the
-     * appearance of the status bar so the font will not clash with the background.
-     *
-     * @param bgColor Background color
-     */
-    private void updateStatusBar(int bgColor) {
-        Window window = cordova.getActivity().getWindow();
-
-        View statusBar = getStatusBarView(webView);
-        if (statusBar != null) {
-            statusBar.setBackgroundColor(bgColor);
-        }
-
-        // Automatically set the font and icon color of the system bars based on background color.
-        boolean isStatusBarBackgroundColorLight;
-        if(bgColor == Color.TRANSPARENT) {
-            isStatusBarBackgroundColorLight = isColorLight(getUiModeColor());
-        } else {
-            isStatusBarBackgroundColorLight = isColorLight(bgColor);
-        }
-        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
-        controllerCompat.setAppearanceLightStatusBars(isStatusBarBackgroundColorLight);
-    }
-
-    /**
      * Determines if the supplied color's appearance is light.
      *
      * @param color color
      * @return boolean value true is returned when the color is light.
      */
-    private static boolean isColorLight(int color) {
+    private static boolean isColorLight(@ColorInt int color) {
         double r = Color.red(color) / 255.0;
         double g = Color.green(color) / 255.0;
         double b = Color.blue(color) / 255.0;
         double luminance = 0.299 * r + 0.587 * g + 0.114 * b;
         return luminance > 0.5;
-    }
-
-    /**
-     * Returns the StatusBarBackgroundColor preference value or {@link #getUiModeColor()} as fallback.
-     *
-     * @return Integer
-     */
-    private Integer getPreferenceStatusBarBackgroundColor() {
-        String colorString = preferences.getString("StatusBarBackgroundColor", null);
-        return Objects.requireNonNullElse(parseColorFromString(colorString), getUiModeColor());
     }
 
     /**
@@ -344,30 +301,12 @@ public class SystemBarPlugin extends CordovaPlugin {
      * @return int color
      */
     @SuppressLint("DiscouragedApi")
-    private int getUiModeColor() {
+    private @ColorInt int getUiModeColor() {
         boolean isNightMode = (resources.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         String fallbackColor = isNightMode ? "#121318" : "#FAF8FF";
         int colorResId = resources.getIdentifier("cdv_background_color", "color", context.getPackageName());
         return colorResId != 0
                 ? ContextCompat.getColor(context, colorResId)
                 : Color.parseColor(fallbackColor);
-    }
-
-    /**
-     * Parses a color string provided by app developers.
-     * If the color string is empty or unable to parse, null is returned.
-     *
-     * @param colorPref hex string value, #AARRGGBB or #RRGGBB
-     * @return Integer|null
-     */
-    private Integer parseColorFromString(final String colorPref) {
-        if (colorPref == null || colorPref.isEmpty()) return null;
-
-        try {
-            return Color.parseColor(colorPref);
-        } catch (IllegalArgumentException ignore) {
-            LOG.e(PLUGIN_NAME, "Invalid color hex code. Valid format: #RRGGBB or #AARRGGBB");
-            return null;
-        }
     }
 }
