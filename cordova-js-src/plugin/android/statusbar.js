@@ -18,7 +18,7 @@
 */
 
 var exec = require('cordova/exec');
-var parseColor = require('./parse-color');
+var parseColor = require('cordova/plugin/android/parse-color');
 
 var statusBarVisible = true;
 var statusBar = {};
