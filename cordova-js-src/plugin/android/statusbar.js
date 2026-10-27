@@ -18,13 +18,10 @@
 */
 
 var exec = require('cordova/exec');
+var parseColor = require('./parse-color');
 
 var statusBarVisible = true;
 var statusBar = {};
-
-// This <script> element is explicitly used by Cordova's statusbar for computing color. (Do not use this element)
-const statusBarScript = document.createElement('script');
-document.head.appendChild(statusBarScript);
 
 /**
  * Sets the visibility of the status bar, which will only work if Android EdgeToEdge is disabled.
@@ -70,17 +67,8 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
     enumerable: false,
     writable: false,
     value: function (value) {
-        statusBarScript.style.color = value;
-        var rgbStr = window.getComputedStyle(statusBarScript).getPropertyValue('color');
-
-        if (!rgbStr.match(/^rgb/)) {
-            return;
-        }
-
-        var rgbVals = rgbStr.match(/[\d.]+/g).map(function (v, i) { return (i < 3) ? parseInt(v, 10) : parseFloat(v); });
-        if (rgbVals.length < 3) {
-            return;
-        }
+        var rgbVals = parseColor(value);
+        if (!rgbVals) return;
 
         if (window.StatusBar) {
             // try to let the StatusBar plugin handle it

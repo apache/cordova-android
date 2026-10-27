@@ -18,12 +18,9 @@
 */
 
 var exec = require('cordova/exec');
+var parseColor = require('./parse-color');
 
 var navigationBar = {};
-
-// This <script> element is explicitly used by Cordova's navigationbar for computing color. (Do not use this element)
-const navigationBarScript = document.createElement('script');
-document.head.appendChild(navigationBarScript);
 
 /**
  * Sets the background color of the navigation bar, this will only work on old Android devices or if gesture navigation is disabled (3 button navigation).
@@ -34,17 +31,8 @@ Object.defineProperty(navigationBar, 'setBackgroundColor', {
     enumerable: false,
     writable: false,
     value: function (value) {
-        navigationBarScript.style.color = value;
-        var rgbStr = window.getComputedStyle(navigationBarScript).getPropertyValue('color');
-
-        if (!rgbStr.match(/^rgb/)) {
-            return;
-        }
-
-        var rgbVals = rgbStr.match(/[\d.]+/g).map(function (v, i) { return (i < 3) ? parseInt(v, 10) : parseFloat(v); });
-        if (rgbVals.length < 3) {
-            return;
-        }
+        var rgbVals = parseColor(value);
+        if (!rgbVals) return;
 
         exec(null, null, 'SystemBarPlugin', 'setNavigationBarBackgroundColor', rgbVals);
     }
