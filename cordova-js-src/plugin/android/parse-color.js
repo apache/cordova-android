@@ -17,7 +17,7 @@
     under the License.
 */
 
-// This <script> element is explicitly used by Cordova's navigationbar for computing color. (Do not use this element)
+// This <script> element is explicitly used by Cordova's for computing color. (Do not use this element)
 const parseColorScript = document.createElement('script');
 document.head.appendChild(parseColorScript);
 
