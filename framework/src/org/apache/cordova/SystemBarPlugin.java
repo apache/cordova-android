@@ -390,7 +390,7 @@ public class SystemBarPlugin extends CordovaPlugin {
      * Also updates the appearance of the navigation bar icons.
      *
      * @param rootColor The color to set for the root view's background.
-     * @param barColor The color to set for the navigation bar.
+     * @param navigationBarColor The color to set for the navigation bar.
      * @param isBackgroundColorLight True if the background color is light, false otherwise.
      */
     private void setNavigationBarColors(int rootColor, int navigationBarColor, boolean isBackgroundColorLight) {
@@ -416,7 +416,7 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
-     * Allow the app to override the navigation bar background color from JS API.
+     * Allow the app to set the navigation bar background color from JS API.
      * Also updates the root view's background color to match the navigation bar color.
      * If the supplied ARGB is invalid or fails to parse, it will silently ignore
      * the change request.
