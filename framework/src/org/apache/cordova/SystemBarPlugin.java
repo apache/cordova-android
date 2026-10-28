@@ -434,7 +434,6 @@ public class SystemBarPlugin extends CordovaPlugin {
             boolean shouldUseTransparentNavigationBar = Color.alpha(navigationBarColor) == 0;
 
             final Window window = cordova.getActivity().getWindow();
-            final View decorView = window.getDecorView();
 
             // Clear any previous translucent navigation flag and ensure the window draws system bar backgrounds.
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
