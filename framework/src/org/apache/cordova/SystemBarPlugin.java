@@ -463,7 +463,7 @@ public class SystemBarPlugin extends CordovaPlugin {
             setNavigationBarColors(rootColor, navigationBarColor, isBackgroundColorLight);
 
         } catch (JSONException e) {
-            // Silently skip
+            LOG.e(PLUGIN_NAME, "Failed to set navigation bar background color", e);
         }
     }
 }
