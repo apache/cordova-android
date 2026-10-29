@@ -66,6 +66,7 @@ public class SystemWebViewClient extends WebViewClient {
     private final WebViewAssetLoader assetLoader;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
+    private boolean hasStartedPage;
 
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
@@ -206,8 +207,14 @@ public class SystemWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
-        // Flush stale messages & reset plugins.
-        parentEngine.bridge.reset();
+        // The first document has no previous bridge to invalidate. Reproduced on
+        // Android 7.1.1 (API 25), Google WebView 55.0.2883.91: gap_init can arrive
+        // before this callback, so resetting would disable the new document's bridge.
+        // The full affected Android/WebView version range has not been established.
+        if (hasStartedPage) {
+            parentEngine.bridge.reset();
+        }
+        hasStartedPage = true;
         parentEngine.client.onPageStarted(url);
     }
 

@@ -591,6 +591,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
 
     protected class EngineClient implements CordovaWebViewEngine.Client {
+        private boolean hasStartedPage;
+
         @Override
         public void clearLoadTimeoutTimer() {
             loadUrlTimeout++;
@@ -599,8 +601,15 @@ public class CordovaWebViewImpl implements CordovaWebView {
         @Override
         public void onPageStarted(String newUrl) {
             LOG.d(TAG, "onPageDidNavigate(" + newUrl + ")");
-            boundKeyCodes.clear();
-            pluginManager.onReset();
+            // Plugins are already initialized for the first document. On Android 7.1.1
+            // (API 25), Google WebView 55.0.2883.91 was observed running its JavaScript
+            // before onPageStarted, so resetting here can clear its new back override.
+            // Other affected Android/WebView versions have not been established.
+            if (hasStartedPage) {
+                boundKeyCodes.clear();
+                pluginManager.onReset();
+            }
+            hasStartedPage = true;
             pluginManager.postMessage("onPageStarted", newUrl);
         }
 
