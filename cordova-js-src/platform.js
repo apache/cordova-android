@@ -41,6 +41,10 @@ module.exports = {
         // see the file under plugin/android/statusbar.js
         modulemapper.clobbers('cordova/plugin/android/statusbar', 'window.statusbar');
 
+        // Attach the internal navigationBar utility to window.navigationbar
+        // see the file under plugin/android/navigationbar.js
+        modulemapper.clobbers('cordova/plugin/android/navigationbar', 'window.navigationbar');
+
         var APP_PLUGIN_NAME = Number(cordova.platformVersion.split('.')[0]) >= 4 ? 'CoreAndroid' : 'App';
 
         // Inject a listener for the backbutton on the document.

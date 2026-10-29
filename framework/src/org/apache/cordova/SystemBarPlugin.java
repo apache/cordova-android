@@ -28,6 +28,7 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 
@@ -49,6 +50,7 @@ public class SystemBarPlugin extends CordovaPlugin {
     private Context context;
     private Resources resources;
     private Integer overrideStatusBarBackgroundColor = null;
+    private boolean hasNavigationBarBackgroundColor = false;
 
     private boolean canEdgeToEdge = false;
 
@@ -86,6 +88,8 @@ public class SystemBarPlugin extends CordovaPlugin {
             cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
         } else if ("setStatusBarBackgroundColor".equals(action)) {
             cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(args));
+        } else if ("setNavigationBarBackgroundColor".equals(action)) {
+            cordova.getActivity().runOnUiThread(() -> setNavigationBarBackgroundColor(args));
         } else {
             return false;
         }
@@ -132,12 +136,7 @@ public class SystemBarPlugin extends CordovaPlugin {
      */
     private void setStatusBarBackgroundColor(JSONArray argbVals) {
         try {
-            int r = argbVals.getInt(0);
-            int g = argbVals.getInt(1);
-            int b = argbVals.getInt(2);
-            int a = Math.round(255 * (float)argbVals.optDouble(3, 1.0));
-
-            overrideStatusBarBackgroundColor = Color.argb(a, r, g, b);
+            overrideStatusBarBackgroundColor = parseColorFromARGB(argbVals, false);
             updateStatusBar(overrideStatusBarBackgroundColor);
         } catch (JSONException e) {
             // Silently skip
@@ -191,10 +190,6 @@ public class SystemBarPlugin extends CordovaPlugin {
     private void updateRootView(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
-        // Set the root view's background color. Works on SDK 36+
-        View root = cordova.getActivity().findViewById(android.R.id.content);
-        if (root != null) root.setBackgroundColor(bgColor);
-
         // Automatically set the font and icon color of the system bars based on background color.
         boolean isBackgroundColorLight;
         if(bgColor == Color.TRANSPARENT) {
@@ -213,13 +208,13 @@ public class SystemBarPlugin extends CordovaPlugin {
                 }
             }
         }
-        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
-        controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.setNavigationBarColor(bgColor);
-        } else {
-            window.setNavigationBarColor(Color.BLACK);
+        // Unless setNavigationBarBackgroundColor() has been explicitly called
+        if (!hasNavigationBarBackgroundColor) {
+            // Set the root view's background color.
+            int rootColor = bgColor;
+            int navigationBarColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? bgColor : Color.BLACK;
+            setNavigationBarColors(rootColor, navigationBarColor, isBackgroundColorLight);
         }
     }
 
@@ -330,6 +325,28 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
+     * Tries to find and return the navigationBarView.
+     *
+     * @param webView CordovaWebView
+     * @return View|null
+     */
+    private View getNavigationBarView(CordovaWebView webView) {
+        FrameLayout rootView = getRootLayout(webView);
+        if (rootView == null) {
+            return null;
+        }
+
+        for (int i = 0; i < rootView.getChildCount(); i++) {
+            View child = rootView.getChildAt(i);
+            Object tag = child.getTag();
+            if ("navigationBarView".equals(tag)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Determines the background color for status bar & root layer.
      * The color will come from the app's R.color.cdv_background_color.
      * If for some reason the resource is missing, it will try to fallback on the uiMode.
@@ -368,6 +385,102 @@ public class SystemBarPlugin extends CordovaPlugin {
         } catch (IllegalArgumentException ignore) {
             LOG.e(PLUGIN_NAME, "Invalid color hex code. Valid format: #RRGGBB or #AARRGGBB");
             return null;
+        }
+    }
+
+    /**
+     * Get a color from an array of ARGB values.
+     *
+     * @param argbVals {R, G, B, A}
+     * @param opaque if the color should be opaque
+     * @return the resulting color as an integer
+     */
+    private int parseColorFromARGB(JSONArray argbVals, boolean opaque) throws JSONException {
+        int r = argbVals.getInt(0);
+        int g = argbVals.getInt(1);
+        int b = argbVals.getInt(2);
+
+        if (opaque) {
+            return Color.rgb(r, g, b);
+        }
+
+        int a = Math.round(255 * (float)argbVals.optDouble(3, 1.0));
+        return Color.argb(a, r, g, b);
+    }
+
+    /**
+     * Converts a color to its opaque equivalent by removing the alpha component.
+     *
+     * @param color The original color.
+     * @return The opaque color.
+     */
+    private int toOpaqueColor(int color) {
+        return Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
+    }
+
+    /**
+     * Sets the navigation bar color and the root view's background color.
+     * Also updates the appearance of the navigation bar icons.
+     *
+     * @param rootColor The color to set for the root view's background.
+     * @param navigationBarColor The color to set for the navigation bar.
+     * @param isBackgroundColorLight True if the background color is light, false otherwise.
+     */
+    private void setNavigationBarColors(int rootColor, int navigationBarColor, boolean isBackgroundColorLight) {
+        // Set the root view's background color.
+        View root = cordova.getActivity().findViewById(android.R.id.content);
+        if (root != null) root.setBackgroundColor(rootColor);
+
+        final Window window = cordova.getActivity().getWindow();
+        final View decorView = window.getDecorView();
+
+        // Set light navigation bar icons
+        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, decorView);
+        controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
+
+        // Set NavigationBarView background color
+        View navigationBar = getNavigationBarView(webView);
+        if (navigationBar != null) {
+            navigationBar.setBackgroundColor(navigationBarColor);
+        }
+    }
+
+    /**
+     * Allow the app to set the navigation bar background color from JS API.
+     * Also updates the root view's background color to match the navigation bar color.
+     * If the supplied ARGB is invalid or fails to parse, it will silently ignore
+     * the change request.
+     *
+     * @param argbVals {R, G, B, A}
+     */
+    private void setNavigationBarBackgroundColor(JSONArray argbVals) {
+         try {
+            hasNavigationBarBackgroundColor = true;
+
+            int navigationBarColor = parseColorFromARGB(argbVals, false);
+
+            // Set light navigation bar icons based on the background color
+            boolean isBackgroundColorLight = isColorLight(navigationBarColor);
+            boolean shouldUseTransparentNavigationBar = Color.alpha(navigationBarColor) == 0;
+
+            final Window window = cordova.getActivity().getWindow();
+
+            // Clear any previous translucent navigation flag and ensure the window draws system bar backgrounds.
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+            // Disable enforced navigation bar contrast when transparent to prevent the system from adding a scrim.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.setNavigationBarContrastEnforced(!shouldUseTransparentNavigationBar);
+            }
+
+            // Set the root view's background color.
+            // Mitigate/Fix https://github.com/apache/cordova-android/issues/1946
+            int rootColor = toOpaqueColor(navigationBarColor);
+            setNavigationBarColors(rootColor, navigationBarColor, isBackgroundColorLight);
+
+        } catch (JSONException e) {
+            LOG.e(PLUGIN_NAME, "Failed to set navigation bar background color", e);
         }
     }
 }
