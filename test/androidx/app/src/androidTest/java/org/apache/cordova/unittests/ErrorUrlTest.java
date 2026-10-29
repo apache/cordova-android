@@ -17,53 +17,44 @@
     under the License.
 */
 
-
 package org.apache.cordova.unittests;
 
 import android.content.Intent;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import org.apache.cordova.CordovaWebView;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertEquals;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.apache.cordova.unittests.WebViewTestUtils.awaitPageFinished;
+import static org.apache.cordova.unittests.WebViewTestUtils.awaitJavascript;
 
 @RunWith(AndroidJUnit4.class)
 public class ErrorUrlTest {
-    private static final String START_URL = "file:///android_asset/www/htmlnotfound/index.html";
-    private static final String ERROR_URL = "file:///android_asset/www/htmlnotfound/error.html";
+    private static final String START_URL = "https://localhost/htmlnotfound/index.html";
+    private static final String ERROR_URL = "https://localhost/htmlnotfound/error.html";
     private static final String INVALID_URL = "file:///android_asset/www/invalid.html";
 
-    //I have no idea why we picked 100, but we did.
-    private static final int WEBVIEW_ID = 100;
-    private TestActivity mActivity;
-
     @Rule
-    public ActivityTestRule mActivityRule = new ActivityTestRule<>(
-            TestActivity.class);
-
-    @Before
-    public void launchApplicationWithIntent() {
-        Intent intent = new Intent();
-        intent.putExtra("startUrl", START_URL);
-        intent.putExtra("errorurl", INVALID_URL);
-        intent.putExtra("url", INVALID_URL);
-        mActivity = (TestActivity) mActivityRule.launchActivity(intent);
-    }
+    public ActivityTestRule<TestActivity> activityRule = new ActivityTestRule<>(TestActivity.class, true, false);
 
     @Test
     public void errorUrlTest() throws Throwable {
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
-        assertEquals(ERROR_URL, mActivity.onPageFinishedUrl.take());
-        mActivityRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assertEquals(ERROR_URL, mActivity.getWebInterface().getUrl());
-            }
-        });
+        Intent intent = new Intent();
+        intent.putExtra("startUrl", START_URL);
+        TestActivity activity = activityRule.launchActivity(intent);
+        awaitPageFinished(activity, START_URL);
+        // A missing local file produces a real WebView load error without network I/O.
+        activityRule.runOnUiThread(() -> activity.getWebInterface().loadUrl(INVALID_URL));
+
+        assertEquals(INVALID_URL, activity.onReceivedErrorUrl.poll(10, TimeUnit.SECONDS));
+        // WebView need not finish the failed document before Cordova opens the fallback.
+        awaitPageFinished(activity, ERROR_URL);
+        awaitJavascript(activityRule, activity, "document.title === 'Expected Error'");
+        activityRule.runOnUiThread(() -> assertEquals(ERROR_URL, activity.getWebInterface().getUrl()));
     }
 }

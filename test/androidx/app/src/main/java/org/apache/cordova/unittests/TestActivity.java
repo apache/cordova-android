@@ -34,6 +34,8 @@ import java.util.concurrent.RunnableFuture;
 
 public class TestActivity extends CordovaActivity {
 
+    public final ArrayBlockingQueue<String> onReceivedErrorUrl = new ArrayBlockingQueue<String>(500);
+
     public final ArrayBlockingQueue<String> onPageFinishedUrl = new ArrayBlockingQueue<String>(500);
 
 
@@ -52,6 +54,12 @@ public class TestActivity extends CordovaActivity {
 
         // Set by <content src="index.html" /> in config.xml
         loadUrl(launchUrl);
+    }
+
+    @Override
+    public void onReceivedError(int errorCode, String description, String failingUrl) {
+        onReceivedErrorUrl.offer(failingUrl);
+        super.onReceivedError(errorCode, description, failingUrl);
     }
 
     @Override
