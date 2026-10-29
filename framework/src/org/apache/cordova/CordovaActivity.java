@@ -216,6 +216,14 @@ public class CordovaActivity extends AppCompatActivity {
         // Create StatusBar view that will overlay the top inset
         View statusBarView = new View(this);
         statusBarView.setTag("statusBarView");
+        // Start with a height of 0. The inset listener below sizes the view to the status bar height, but if the window
+        // insets never reach the root layout (observed on Android 8.0 where the decor consumes them), the view would
+        // otherwise keep FrameLayout's default MATCH_PARENT params and cover the whole WebView.
+        statusBarView.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                Gravity.TOP
+        ));
 
         // Create NavigationBar view that will overlay the bottom inset
         View navigationBarView = new View(this);
@@ -231,7 +239,8 @@ public class CordovaActivity extends AppCompatActivity {
                     WindowInsetsCompat.Type.navigationBars()
             );
 
-            boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
+            boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE
+                    && insets.isVisible(WindowInsetsCompat.Type.statusBars());
             int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
             int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
             int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
@@ -266,7 +275,11 @@ public class CordovaActivity extends AppCompatActivity {
             );
             navigationBarView.setLayoutParams(navigationBarParams);
 
-            return insets;
+            // Subtract the margins already applied to the WebView from every inset type before dispatch.
+            // This prevents CSS env(safe-area-inset-*) from reporting space excluded by those margins.
+            // It also reduces IME insets by the bottom margin used to accommodate the keyboard.
+            // Any inset portion beyond the applied margins remains available to child views.
+            return insets.inset(left, top, right, bottom);
         });
 
         rootLayout.addView(webView);
