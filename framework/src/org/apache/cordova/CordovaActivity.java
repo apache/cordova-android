@@ -280,7 +280,6 @@ public class CordovaActivity extends AppCompatActivity {
             // It also reduces IME insets by the bottom margin used to accommodate the keyboard.
             // Any inset portion beyond the applied margins remains available to child views.
             return insets.inset(left, top, right, bottom);
-
         });
 
         rootLayout.addView(webView);
