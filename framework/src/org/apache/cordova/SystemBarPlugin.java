@@ -314,6 +314,28 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
+     * Tries to find and return the navigationBarView.
+     *
+     * @param webView CordovaWebView
+     * @return View|null
+     */
+    private View getNavigationBarView(CordovaWebView webView) {
+        FrameLayout rootView = getRootLayout(webView);
+        if (rootView == null) {
+            return null;
+        }
+
+        for (int i = 0; i < rootView.getChildCount(); i++) {
+            View child = rootView.getChildAt(i);
+            Object tag = child.getTag();
+            if ("navigationBarView".equals(tag)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Determines the background color for status bar & root layer.
      * The color will come from the app's R.color.cdv_background_color.
      * If for some reason the resource is missing, it will try to fallback on the uiMode.
@@ -405,13 +427,10 @@ public class SystemBarPlugin extends CordovaPlugin {
         WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, decorView);
         controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
 
-        // setNavigationBarColor() is deprecated on Android 15 and later.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            // Transparent colors only works on Android 11 and above
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                navigationBarColor = toOpaqueColor(navigationBarColor);
-            }
-            window.setNavigationBarColor(navigationBarColor);
+        // Set NavigationBarView background color
+        View navigationBar = getNavigationBarView(webView);
+        if (navigationBar != null) {
+            navigationBar.setBackgroundColor(navigationBarColor);
         }
     }
 
@@ -438,18 +457,6 @@ public class SystemBarPlugin extends CordovaPlugin {
             // Clear any previous translucent navigation flag and ensure the window draws system bar backgrounds.
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-
-            // Allow content to extend behind system bars when using a transparent navigation bar.
-            // On Android versions below 13, WindowCompat.setDecorFitsSystemWindows() causes the status bar area to have a black background.
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                WindowCompat.setDecorFitsSystemWindows(window, !shouldUseTransparentNavigationBar);
-            } else {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && shouldUseTransparentNavigationBar) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                } else {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                }
-            }
 
             // Disable enforced navigation bar contrast when transparent to prevent the system from adding a scrim.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
