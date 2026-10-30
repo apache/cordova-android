@@ -52,11 +52,52 @@ public class SystemBarPlugin extends CordovaPlugin {
 
     private boolean canEdgeToEdge = false;
 
+    public interface ICDVNavigationController {
+        void update(WindowInsetsControllerCompat controller, boolean isColorLight, int color);
+    }
+
+    private static class DefaultNavigationController implements ICDVNavigationController {
+        private final CordovaInterface cordova;
+
+        public DefaultNavigationController(CordovaInterface cordova) {
+            this.cordova = cordova;
+        }
+
+        public void update(WindowInsetsControllerCompat controller, boolean isColorLight, int color) {
+            controller.setAppearanceLightNavigationBars(isColorLight);
+            Window window = cordova.getActivity().getWindow();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                window.setNavigationBarColor(color);
+            } else {
+                window.setNavigationBarColor(Color.BLACK);
+            }
+        }
+    }
+
+    private ICDVNavigationController navigationBarController;
+
     @Override
     protected void pluginInitialize() {
         context = cordova.getContext();
         resources = context.getResources();
         canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
+
+        navigationBarController = null;
+
+        String controllerPlugin = preferences.getString("AndroidNavigationControllerPlugin", null);
+
+        if (controllerPlugin != null) {
+            CordovaPlugin maybeControllerPlugin = webView.getPluginManager().getPlugin(controllerPlugin);
+            if (maybeControllerPlugin instanceof ICDVNavigationController) {
+                navigationBarController = (ICDVNavigationController) maybeControllerPlugin;
+            } else {
+                LOG.w(PLUGIN_NAME, "Navigation Controller plugin \"" + controllerPlugin + "\" requested but does not implement the ICDVNavigationController interface");
+            }
+        }
+
+        if (navigationBarController == null) {
+            navigationBarController = new DefaultNavigationController(cordova);
+        }
     }
 
     @Override
@@ -187,7 +228,6 @@ public class SystemBarPlugin extends CordovaPlugin {
      *
      * @param bgColor Background color
      */
-    @SuppressWarnings("deprecation")
     private void updateRootView(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
@@ -213,14 +253,15 @@ public class SystemBarPlugin extends CordovaPlugin {
                 }
             }
         }
-        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
-        controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.setNavigationBarColor(bgColor);
-        } else {
-            window.setNavigationBarColor(Color.BLACK);
+        WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
+
+        int navBGColor = Color.BLACK;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            navBGColor = bgColor;
         }
+
+        navigationBarController.update(controllerCompat, isBackgroundColorLight, navBGColor);
     }
 
     /**
