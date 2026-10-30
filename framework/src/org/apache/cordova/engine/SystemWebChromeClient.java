@@ -42,7 +42,6 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.PermissionRequest;
 import android.widget.LinearLayout;
@@ -148,19 +147,6 @@ public class SystemWebChromeClient extends WebChromeClient {
             });
         }
         return true;
-    }
-
-    /**
-     * Handle database quota exceeded notification.
-     */
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
-            long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
-    {
-        LOG.d(LOG_TAG, "onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
-        long MAX_QUOTA = 100 * 1024 * 1024;
-        quotaUpdater.updateQuota(MAX_QUOTA);
     }
 
     /**
