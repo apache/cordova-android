@@ -63,6 +63,7 @@ public class SystemBarPlugin extends CordovaPlugin {
             this.cordova = cordova;
         }
 
+        @Override
         public void update(WindowInsetsControllerCompat controller, boolean isColorLight, int color) {
             controller.setAppearanceLightNavigationBars(isColorLight);
             Window window = cordova.getActivity().getWindow();
