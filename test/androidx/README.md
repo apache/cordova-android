@@ -37,24 +37,22 @@ Android Studio:
 
 ### Command Line
 
-Ensure you have the gradle wrapper script, `gradlew`, in this directory. If
-you do not, you can run the following to generate it:
+From the repository root, prepare the Gradle wrapper and generated build inputs,
+and run the Java unit tests:
 
-    $ cd cordova-android/test
-    $ gradle :wrapper -b build.gradle
+    npm run java-unit-tests
 
-You can then see a list of all tasks available to run with `gradlew tasks`.
+Then build the application and the complete instrumentation test APK:
 
-The two different kinds of tests one typically wants to run are unit tests and
-end-to-end, or instrumented, tests. Unit tests do not require any particular
-environment to run in, but the instrumented tests, however, require a connected
-Android device or emulator to run in.
+    cd test/androidx
+    tools/gradlew :app:assembleDebug :app:assembleDebugAndroidTest
 
-- To run the unit tests, run: `gradlew test`.
-- To run the instrumented tests, run: `gradlew connectedAndroidTest`.
+With an Android device or emulator connected, run the instrumentation tests:
+
+    tools/gradlew connectedDebugAndroidTest
 
 To make sure all tests are run, add the `--rerun-tasks` parameter.
 
 ### Android Studio
 
-Import this `test/` directory into Android Studio, and hit the Play button.
+Import this `test/androidx/` directory into Android Studio, and hit the Play button.
