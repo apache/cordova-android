@@ -41,11 +41,19 @@ jobs:
       fail-fast: false
       matrix:
         # Exercise the minimum supported API and the current target API.
+        # The suite does not require Google services. These per-API choices
+        # retain configurations that completed the full suite during CI setup.
         include:
+          # Google APIs passed all 16 tests. The AOSP image booted but hung
+          # while the emulator action disabled animations, before tests ran.
           - api-level: 24
             target: google_apis
             cores: 2
             ram-size: 1024M
+          # The Google APIs run passed 15/16 tests: Espresso logged a tap
+          # delayed into a long press. AOSP with more CPU/RAM passed twice.
+          # Image and resources changed together; AOSP alone is not proven
+          # to explain the improvement or to be required on this API.
           - api-level: 36
             target: default
             cores: 4
