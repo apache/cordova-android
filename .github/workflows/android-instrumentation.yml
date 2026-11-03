@@ -74,7 +74,7 @@ jobs:
         env:
           COMPILE_SDK: ${{ steps.android.outputs.compile-sdk }}
           BUILD_TOOLS: ${{ steps.android.outputs.build-tools }}
-        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-$COMPILE_SDK" "build-tools;$BUILD_TOOLS"' 
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-$COMPILE_SDK" "build-tools;$BUILD_TOOLS"'
 
       - name: Prepare test project and build APKs
         run: |
@@ -94,7 +94,9 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: ${{ matrix.api-level }}
-          target: google_apis
+          target: default
+          cores: 4
+          ram-size: 4096M
           arch: x86_64
           disable-animations: true
           emulator-boot-timeout: 600
