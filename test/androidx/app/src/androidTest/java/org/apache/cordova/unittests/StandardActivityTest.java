@@ -22,7 +22,7 @@ package org.apache.cordova.unittests;
 import android.content.Intent;
 import android.graphics.Color;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.view.View;
 import android.widget.LinearLayout;
 
