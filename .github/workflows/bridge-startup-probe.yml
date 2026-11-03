@@ -1,0 +1,132 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+name: Bridge Startup Diagnostic
+
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bridge-startup-diagnostic-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  instrumentation:
+    name: Unfixed startup API ${{ matrix.api-level }}
+    # Keep the runner image with the preinstalled Android SDK and Gradle.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # Exercise the minimum supported API and the current target API.
+        # The suite does not require Google services. These per-API choices
+        # retain configurations that completed the full suite during CI setup.
+        include:
+          # Google APIs passed all 16 tests. The AOSP image booted but hung
+          # while the emulator action disabled animations, before tests ran.
+          - api-level: 24
+            target: google_apis
+            cores: 2
+            ram-size: 1024M
+          # The Google APIs run passed 15/16 tests: Espresso logged a tap
+          # delayed into a long press. AOSP with more CPU/RAM passed twice.
+          # Image and resources changed together; AOSP alone is not proven
+          # to explain the improvement or to be required on this API.
+          - api-level: 36
+            target: default
+            cores: 4
+            ram-size: 4096M
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Read Android build requirements
+        id: android
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const config = require('./framework/cdv-gradle-config-defaults.json');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,
+            `compile-sdk=${config.COMPILE_SDK_VERSION || config.SDK_VERSION}\n` +
+            `build-tools=${config.MIN_BUILD_TOOLS_VERSION}\n`);
+          NODE
+
+      - name: Install Android build requirements
+        env:
+          COMPILE_SDK: ${{ steps.android.outputs.compile-sdk }}
+          BUILD_TOOLS: ${{ steps.android.outputs.build-tools }}
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-$COMPILE_SDK" "build-tools;$BUILD_TOOLS"'
+
+      - name: Prepare test project and build APKs
+        run: |
+          npm ci
+          # Reuse the existing wrapper and generated-input preparation.
+          npm run java-unit-tests
+          cd test/androidx
+          tools/gradlew :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run instrumentation tests
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          cores: ${{ matrix.cores }}
+          ram-size: ${{ matrix.ram-size }}
+          arch: x86_64
+          disable-animations: true
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash test/run_android_instrumentation_tests.sh
+
+      - name: Upload instrumentation results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unfixed-startup-api-${{ matrix.api-level }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            test/androidx/app/build/reports/androidTests/
+            test/androidx/app/build/outputs/androidTest-results/
+            test/androidx/build/instrumentation/
