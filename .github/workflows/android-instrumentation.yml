@@ -41,7 +41,15 @@ jobs:
       fail-fast: false
       matrix:
         # Exercise the minimum supported API and the current target API.
-        api-level: [24, 36]
+        include:
+          - api-level: 24
+            target: google_apis
+            cores: 2
+            ram-size: 1024M
+          - api-level: 36
+            target: default
+            cores: 4
+            ram-size: 4096M
     env:
       CI: true
 
@@ -94,9 +102,9 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: ${{ matrix.api-level }}
-          target: default
-          cores: 4
-          ram-size: 4096M
+          target: ${{ matrix.target }}
+          cores: ${{ matrix.cores }}
+          ram-size: ${{ matrix.ram-size }}
           arch: x86_64
           disable-animations: true
           emulator-boot-timeout: 600

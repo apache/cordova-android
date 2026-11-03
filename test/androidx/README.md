@@ -60,8 +60,9 @@ Import this `test/androidx/` directory into Android Studio, and hit the Play but
 ## Continuous integration
 
 The separate [Android Instrumentation workflow](../../.github/workflows/android-instrumentation.yml)
-runs the complete instrumentation suite on AOSP x86_64 emulators for
-API 24 (the minimum supported API) and API 36 (the current target API). Update
+runs the complete instrumentation suite on x86_64 emulators for API 24
+(the minimum supported API, Google APIs image) and API 36 (the current target
+API, AOSP image). Update
 this matrix when the supported API range changes. The system images supply
 the WebView; this is not a matrix of independently selected WebView versions.
 
