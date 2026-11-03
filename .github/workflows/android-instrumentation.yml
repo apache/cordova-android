@@ -34,6 +34,7 @@ concurrency:
 jobs:
   instrumentation:
     name: Instrumentation API ${{ matrix.api-level }}
+    # Keep the runner image with the preinstalled Android SDK and Gradle.
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -66,22 +67,14 @@ jobs:
           const config = require('./framework/cdv-gradle-config-defaults.json');
           fs.appendFileSync(process.env.GITHUB_OUTPUT,
             `compile-sdk=${config.COMPILE_SDK_VERSION || config.SDK_VERSION}\n` +
-            `build-tools=${config.MIN_BUILD_TOOLS_VERSION}\n` +
-            `gradle-version=${config.GRADLE_VERSION}\n`);
+            `build-tools=${config.MIN_BUILD_TOOLS_VERSION}\n`);
           NODE
-
-      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
-
-      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
-        with:
-          gradle-version: ${{ steps.android.outputs.gradle-version }}
-          cache-disabled: true
 
       - name: Install Android build requirements
         env:
           COMPILE_SDK: ${{ steps.android.outputs.compile-sdk }}
           BUILD_TOOLS: ${{ steps.android.outputs.build-tools }}
-        run: sdkmanager "platforms;android-$COMPILE_SDK" "build-tools;$BUILD_TOOLS"
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-$COMPILE_SDK" "build-tools;$BUILD_TOOLS"' 
 
       - name: Prepare test project and build APKs
         run: |
