@@ -225,10 +225,18 @@ public class CordovaActivity extends AppCompatActivity {
                 Gravity.TOP
         ));
 
+        // Create NavigationBar view that will overlay the bottom inset
+        View navigationBarView = new View(this);
+        navigationBarView.setTag("navigationBarView");
+
         // Handle Window Insets
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
             Insets bars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            Insets navigationInsets = insets.getInsets(
+                    WindowInsetsCompat.Type.navigationBars()
             );
 
             boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE
@@ -241,6 +249,7 @@ public class CordovaActivity extends AppCompatActivity {
             // When in fullscreen mode, we ignore bottom system insets (like the navigation bar)
             // to allow the WebView to span the entire screen and avoid being pushed up.
             int bottom = isFullScreen ? 0 : canEdgeToEdge ? imeInsets.bottom : Math.max(bars.bottom, imeInsets.bottom);
+            int navigationBarHeight = isFullScreen ? 0 : navigationInsets.bottom;
 
             FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
             // Only update layout margins if the values have actually changed.
@@ -258,6 +267,14 @@ public class CordovaActivity extends AppCompatActivity {
             );
             statusBarView.setLayoutParams(statusBarParams);
 
+            // Set the navigation bar view's height based on the navigation bar inset.
+            FrameLayout.LayoutParams navigationBarParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    navigationBarHeight,
+                    Gravity.BOTTOM
+            );
+            navigationBarView.setLayoutParams(navigationBarParams);
+
             // Subtract the margins already applied to the WebView from every inset type before dispatch.
             // This prevents CSS env(safe-area-inset-*) from reporting space excluded by those margins.
             // It also reduces IME insets by the bottom margin used to accommodate the keyboard.
@@ -267,6 +284,7 @@ public class CordovaActivity extends AppCompatActivity {
 
         rootLayout.addView(webView);
         rootLayout.addView(statusBarView);
+        rootLayout.addView(navigationBarView);
 
         setContentView(rootLayout);
         rootLayout.post(() -> ViewCompat.requestApplyInsets(rootLayout));
