@@ -56,3 +56,27 @@ To make sure all tests are run, add the `--rerun-tasks` parameter.
 ### Android Studio
 
 Import this `test/androidx/` directory into Android Studio, and hit the Play button.
+
+## Continuous integration
+
+The separate [Android Instrumentation workflow](../../.github/workflows/android-instrumentation.yml)
+runs the complete instrumentation suite on Google APIs x86_64 emulators for
+API 24 (the minimum supported API) and API 36 (the current target API). Update
+this matrix when the supported API range changes. The system images supply
+the WebView; this is not a matrix of independently selected WebView versions.
+
+It runs on pushes and pull requests, and can also be started manually through
+GitHub Actions. It is independent of Node CI, so instrumentation jobs can be
+rerun without rerunning the Node.js matrix. Matrix jobs do not cancel each
+other when one fails, and test failures are not retried or ignored.
+
+The workflow reuses `npm run java-unit-tests` to prepare the wrapper and
+generated inputs, builds both APKs, then runs `:app:connectedDebugAndroidTest`.
+A 10-minute test-command timeout leaves time to collect diagnostics within
+the 30-minute job limit. Emulator boot has a separate 10-minute timeout.
+
+Each API job uploads HTML/XML test results, the Gradle test log, logcat,
+device properties, and WebView information for 14 days, including on test
+failure. Device diagnostics are collected before the emulator action shuts
+down the emulator. If setup or emulator boot fails, device diagnostics and
+test reports may not be available; inspect the workflow log in that case.
