@@ -43,13 +43,22 @@ jobs:
         # Exercise the minimum supported API and the current target API.
         # The suite does not require Google services. These per-API choices
         # retain configurations that completed the full suite during CI setup.
+        # WebView versions below were observed on 2026-11-03, not pinned;
+        # SDK image updates may change them. They do not define support minima.
+        # Diagnostic #2044, without #2036's core fix: 0/60 dropped startup
+        # overrides on each CI image. Local references: WebView 55.0.2883.91
+        # on Android 7.1.1 dropped 2/60 (0/60 with the fix); WebView
+        # 150.0.7871.181 on Android 16 dropped 0/60 without the fix.
+        # Different OS/CPU configurations prevent inferring a version cutoff.
         include:
+          # Observed provider: Chrome/WebView 69.0.3497.100.
           # Google APIs passed all 16 tests. The AOSP image booted but hung
           # while the emulator action disabled animations, before tests ran.
           - api-level: 24
             target: google_apis
             cores: 2
             ram-size: 1024M
+          # Observed provider: AOSP WebView 133.0.6943.137.
           # The Google APIs run passed 15/16 tests: Espresso logged a tap
           # delayed into a long press. AOSP with more CPU/RAM passed twice.
           # Image and resources changed together; AOSP alone is not proven
