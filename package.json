@@ -33,7 +33,7 @@
     "nopt": "^9.0.0",
     "properties-parser": "^0.6.0",
     "semver": "^7.7.4",
-    "string-argv": "^0.3.2",
+    "string-argv": "^0.4.0",
     "untildify": "^4.0.0",
     "which": "^6.0.1"
   },
