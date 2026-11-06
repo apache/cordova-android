@@ -556,7 +556,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
             // Plugins are already initialized for the first document. On Android 7.1.1
             // (API 25), Google WebView 55.0.2883.91 was observed running its JavaScript
             // before onPageStarted, so resetting here can clear its new back override.
-            // Other affected Android/WebView versions have not been established.
+            // Reproduced with WebView 52-59 on API 25; not observed with WebView 60+
+            // in the tested versions (see #2036).
             if (hasStartedPage) {
                 boundKeyCodes.clear();
                 pluginManager.onReset();

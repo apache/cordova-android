@@ -66,8 +66,9 @@ public class BridgeStartupTest {
     }
 
     // Reproduced on Android 7.1.1 (API 25), Google WebView 55.0.2883.91: gap_init
-    // can arrive before the first onPageStarted callback. The affected version range
-    // is unknown. Repeat fresh activity loads without retrying failed startups.
+    // can arrive before the first onPageStarted callback. The API 25 version sweep
+    // reproduced this with WebView 52-59, but not with WebView 60+ (see #2036).
+    // Repeat fresh activity loads without retrying failed startups.
     @Test
     public void repeatedStartup() throws Throwable {
         int failures = 0;

@@ -210,7 +210,8 @@ public class SystemWebViewClient extends WebViewClient {
         // The first document has no previous bridge to invalidate. Reproduced on
         // Android 7.1.1 (API 25), Google WebView 55.0.2883.91: gap_init can arrive
         // before this callback, so resetting would disable the new document's bridge.
-        // The full affected Android/WebView version range has not been established.
+        // Reproduced with WebView 52-59 on API 25; not observed with WebView 60+
+        // in the tested versions (see #2036).
         if (hasStartedPage) {
             parentEngine.bridge.reset();
         }
