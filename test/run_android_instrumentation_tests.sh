@@ -31,6 +31,25 @@ collect_diagnostics() {
 trap collect_diagnostics EXIT
 
 adb logcat -c
+if [[ -n "${EXPECTED_WEBVIEW_MAJOR:-}" ]]; then
+    # Android 7's current provider is a (package, version) tuple. Check the
+    # selected implementation, not an installed but inactive WebView APK.
+    adb shell dumpsys webviewupdate > build/instrumentation/webview-before.txt
+    provider=$(sed -n 's/.*Current WebView package.*: (\([^,]*\), \([^)]*\)).*/\1 \2/p' \
+        build/instrumentation/webview-before.txt | tr -d '\r')
+    read -r package version <<< "$provider"
+    if [[ "$package" != com.android.webview || "$version" != "$EXPECTED_WEBVIEW_MAJOR".* ]]; then
+        echo "Expected AOSP WebView $EXPECTED_WEBVIEW_MAJOR.x; selected: $provider" >&2
+        cat build/instrumentation/webview-before.txt >&2
+        exit 1
+    fi
+    echo "Testing $package $version"
+    # The action's animation helper previously hung on this old AOSP image.
+    # Bound each direct setting instead; errors fail this job with diagnostics.
+    for setting in window_animation_scale transition_animation_scale animator_duration_scale; do
+        timeout 15s adb shell settings put global "$setting" 0
+    done
+fi
 # Bound hung tests without filtering the suite or retrying failures. Keep time
 # for diagnostics and artifact upload before the workflow's overall timeout.
 timeout --signal=TERM --kill-after=30s 10m \

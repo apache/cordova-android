@@ -40,26 +40,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Exercise the minimum supported API and the current target API.
-        # The suite does not require Google services. These per-API choices
-        # retain configurations that completed the full suite during CI setup.
-        # WebView versions below were observed on 2026-11-03, not pinned;
-        # SDK image updates may change them. They do not define support minima.
-        # Diagnostic #2044, without #2036's core fix: 0/60 dropped startup
-        # overrides on each CI image. Local references: WebView 55.0.2883.91
-        # on Android 7.1.1 dropped 2/60 (0/60 with the fix); WebView
-        # 150.0.7871.181 on Android 16 dropped 0/60 without the fix.
-        # A controlled API 25 ARM64 sweep reproduced the race with WebView 52-59,
-        # but not WebView 60+ (see #2036): 59.0.3071.92 dropped 59/600;
-        # 60.0.3112.78 dropped 0/1300. Both CI providers are above this boundary.
+        # Minimum supported Android and WebView, plus the current target API.
+        # API 24 must use the AOSP provider: the Google APIs image loads Chrome 69.
+        # Verify the selected provider before testing; never silently test a newer
+        # WebView if an SDK image changes. See #2036 for the WebView 52-59 race.
         include:
-          # Observed provider: Chrome/WebView 69.0.3497.100.
-          # Google APIs passed all 16 tests. The AOSP image booted but hung
-          # while the emulator action disabled animations, before tests ran.
           - api-level: 24
-            target: google_apis
+            target: default
             cores: 2
-            ram-size: 1024M
+            ram-size: 2048M
+            expected-webview-major: '52'
+            disable-animations: false
           # Observed provider: AOSP WebView 133.0.6943.137.
           # The Google APIs run passed 15/16 tests: Espresso logged a tap
           # delayed into a long press. AOSP with more CPU/RAM passed twice.
@@ -69,8 +60,11 @@ jobs:
             target: default
             cores: 4
             ram-size: 4096M
+            expected-webview-major: ''
+            disable-animations: true
     env:
       CI: true
+      EXPECTED_WEBVIEW_MAJOR: ${{ matrix.expected-webview-major }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -125,7 +119,7 @@ jobs:
           cores: ${{ matrix.cores }}
           ram-size: ${{ matrix.ram-size }}
           arch: x86_64
-          disable-animations: true
+          disable-animations: ${{ matrix.disable-animations }}
           emulator-boot-timeout: 600
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: bash test/run_android_instrumentation_tests.sh
