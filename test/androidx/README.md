@@ -64,8 +64,9 @@ runs the complete instrumentation suite on x86_64 emulators for API 24
 (the minimum supported API, AOSP image with WebView 52) and API 36 (the current target
 API, AOSP image). Update
 this matrix when the supported API range changes. The system images supply
-the WebView. The API 24 job requires the active AOSP provider to be WebView
-52.x and fails the provider instrumentation test if the image supplies another version. The API 36
+the WebView. The API 24 job requires the loaded AOSP provider to be WebView
+52.x and fails the provider instrumentation test if the image supplies another version. On 2026-11-15, this job passed all 17 tests
+with Android 7.0 and AOSP WebView 52.0.2743.100. The API 36
 job uses its bundled provider without a version restriction. The version check
 and both jobs' diagnostics record the selected provider, not merely installed APKs.
 The API 24 job bypasses the emulator action's animation helper, which previously

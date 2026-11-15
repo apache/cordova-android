@@ -42,7 +42,7 @@ jobs:
       matrix:
         # Minimum supported Android and WebView, plus the current target API.
         # API 24 must use the AOSP provider: the Google APIs image loads Chrome 69.
-        # Verify the selected provider before testing; never silently test a newer
+        # Instrumentation verifies the loaded provider; never silently test a newer
         # WebView if an SDK image changes. See #2036 for the WebView 52-59 race.
         include:
           - api-level: 24
