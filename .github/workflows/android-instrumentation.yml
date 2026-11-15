@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Minimum supported Android and WebView, plus the current target API.
+        # Minimum supported Android/WebView, Android 10, and the current target API.
         # API 24 must use the AOSP provider: the Google APIs image loads Chrome 69.
         # Instrumentation verifies the loaded provider; never silently test a newer
         # WebView if an SDK image changes. See #2036 for the WebView 52-59 race.
@@ -51,6 +51,13 @@ jobs:
             ram-size: 2048M
             expected-webview-major: '52'
             disable-animations: false
+          # Intermediate Android version; record the bundled WebView provider.
+          - api-level: 29
+            target: default
+            cores: 2
+            ram-size: 2048M
+            expected-webview-major: ''
+            disable-animations: true
           # Observed provider: AOSP WebView 133.0.6943.137.
           # The Google APIs run passed 15/16 tests: Espresso logged a tap
           # delayed into a long press. AOSP with more CPU/RAM passed twice.
