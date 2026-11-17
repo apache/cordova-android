@@ -33,14 +33,21 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 @RunWith(AndroidJUnit4.class)
 public class WebViewVersionTest {
     @Test
     public void loadedProviderMatchesRequestedVersion() {
+        String expected = InstrumentationRegistry.getArguments().getString("expectedWebViewMajor", "");
+        assumeFalse("No WebView version requested for this configuration", expected.isEmpty());
+        // Guard minimum-version CI coverage against SDK image/provider changes.
+        // This does not test Android's ability to supply a WebView.
         AtomicReference<PackageInfo> loaded = new AtomicReference<>();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             WebView view = new WebView(InstrumentationRegistry.getInstrumentation().getTargetContext());
+            view.getSettings().setAllowContentAccess(false);
+            view.getSettings().setAllowFileAccess(false);
             try {
                 if (Build.VERSION.SDK_INT >= 26) {
                     loaded.set(WebView.getCurrentWebViewPackage());
@@ -61,11 +68,8 @@ public class WebViewVersionTest {
         PackageInfo provider = loaded.get();
         assertNotNull("No loaded WebView provider", provider);
         Log.i("WebViewVersionTest", "Loaded provider: " + provider.packageName + " " + provider.versionName);
-        String expected = InstrumentationRegistry.getArguments().getString("expectedWebViewMajor", "");
-        if (!expected.isEmpty()) {
-            assertEquals("Expected the AOSP WebView provider", "com.android.webview", provider.packageName);
-            assertTrue("Expected WebView " + expected + ".x, loaded " + provider.versionName,
-                    provider.versionName != null && provider.versionName.startsWith(expected + "."));
-        }
+        assertEquals("Expected the AOSP WebView provider", "com.android.webview", provider.packageName);
+        assertTrue("Expected WebView " + expected + ".x, loaded " + provider.versionName,
+                provider.versionName != null && provider.versionName.startsWith(expected + "."));
     }
 }
