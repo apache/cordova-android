@@ -60,7 +60,7 @@ Import this `test/androidx/` directory into Android Studio, and hit the Play but
 ## Continuous integration
 
 The [Android Instrumentation workflow](../../.github/workflows/android-instrumentation.yml)
-runs the complete suite on AOSP emulators for API 24, 29, and 36.
+runs the complete suite on variety of AOSP emulators.
 API 24 requires WebView 52.x to cover the minimum supported version.
 The provider-version check is skipped when no expected version is specified.
 
