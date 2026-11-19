@@ -100,7 +100,7 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
             const r = padRgb(rgbVals[0]);
             const g = padRgb(rgbVals[1]);
             const b = padRgb(rgbVals[2]);
-            const a = padRgb(255 * (rgbVals[3] !== undefined ? rgbVals[3] : 1.0));
+            const a = padRgb(Math.round(255 * (rgbVals[3] !== undefined ? rgbVals[3] : 1.0)));
 
             const hexStr = '#' + a + r + g + b;
             window.StatusBar.backgroundColorByHexString(hexStr);
