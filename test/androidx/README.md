@@ -56,3 +56,17 @@ To make sure all tests are run, add the `--rerun-tasks` parameter.
 ### Android Studio
 
 Import this `test/androidx/` directory into Android Studio, and hit the Play button.
+
+## Continuous integration
+
+The [Android Instrumentation workflow](../../.github/workflows/android-instrumentation.yml)
+runs the complete suite on variety of AOSP emulators.
+API 24 requires WebView 52.x to cover the minimum supported version.
+The provider-version check is skipped when no expected version is specified.
+
+The workflow runs on pushes and pull requests and can be started manually.
+Failed jobs can be rerun independently of the Node.js workflow.
+
+Download the job artifacts for test reports, Gradle output, logcat, device
+properties, and WebView information. If emulator setup fails before tests
+start, inspect the workflow log.
