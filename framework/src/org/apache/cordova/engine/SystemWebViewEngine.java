@@ -70,6 +70,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     protected CordovaResourceApi resourceApi;
     protected NativeToJsMessageQueue nativeToJsMessageQueue;
     private BroadcastReceiver receiver;
+    private boolean hasStartedPage;
 
     /** Used when created via reflection. */
     public SystemWebViewEngine(Context context, CordovaPreferences preferences) {
@@ -124,6 +125,15 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.EvalBridgeMode(this, cordova));
         bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue);
         exposeJsInterface(webView, bridge);
+    }
+
+    void onPageStarted(String url) {
+        // The first document may have already initialized its bridge before this callback.
+        if (hasStartedPage) {
+            bridge.reset();
+        }
+        hasStartedPage = true;
+        client.onPageStarted(url);
     }
 
     @Override

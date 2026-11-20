@@ -353,7 +353,7 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called when the WebView does a top-level navigation or refreshes.
+     * Called on top-level navigations and refreshes after the initial page load.
      *
      * <p>Plugins should stop any long-running processes and clean up internal state.</p>
      *
