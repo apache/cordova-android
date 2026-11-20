@@ -1,6 +1,6 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <!--
-    Licensed to the Apache Software Foundation (ASF) under one
+Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
     distributed with this work for additional information
     regarding copyright ownership.  The ASF licenses this file
@@ -18,32 +18,10 @@
     under the License.
 -->
 <html>
-  <head>
-    <meta name="viewport" content="width=320, user-scalable=no" />
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <title>Cordova Tests</title>
-      <link rel="stylesheet" href="../master.css" type="text/css" media="screen" title="no title">
-      <script type="text/javascript" charset="utf-8" src="../cordova.js"></script>
-      <script type="text/javascript" charset="utf-8" src="../main.js"></script>
-      <script>
-      function loadUrl(url) {
-    	  document.getElementById('iframe').src = url;
-      }</script>
-  </head>
-  <body onload="init();" id="stage" class="theme">
-    <h1>IFrame</h1>
-    <div id="info">
-        <h4>Cordova: <span id="cordova"> &nbsp;</span></h4>
-        <h4>Deviceready: <span id="deviceready"> &nbsp;</span></h4>
-    </div>
-    <div id="info">
-    Press the two buttons:<br>
-    1. Google Maps should display in iframe.<br>
-    2. Page 2 replaces current page.<br>
-    (NOTE: THIS BEHAVIOR IS WRONG - AND NEEDS TO BE FIXED IN FUTURE RELEASE.)
-    </div>
-    <iframe id="iframe" src="" width="90%" height="200px"></iframe>
-    <a id="google_maps" href="javascript:" class="btn large" onclick="loadUrl('http://maps.google.com/maps?output=embed');">Google Maps</a>
-    <a id="javascript_load" href="javascript:" class="btn large" onclick="loadUrl('index2.html');">Page 2</a>
-  </body>
+<head><meta charset="utf-8"><title>Iframe history regression</title></head>
+<body>
+    <iframe id="iframe" name="contentFrame" src="about:blank" title="History test"></iframe>
+    <a id="first_page" href="frame1.html" target="contentFrame">First page</a>
+    <a id="second_page" href="index2.html" target="contentFrame">Second page</a>
+</body>
 </html>

@@ -17,101 +17,49 @@
     under the License.
 */
 
-
 package org.apache.cordova.unittests;
 
 import android.content.Intent;
-import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import org.apache.cordova.CordovaWebView;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.pressBack;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.web.sugar.Web.onWebView;
-import static androidx.test.espresso.web.webdriver.DriverAtoms.findElement;
-import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.apache.cordova.unittests.WebViewTestUtils.awaitPageFinished;
+import static org.apache.cordova.unittests.WebViewTestUtils.clickElement;
+import static org.apache.cordova.unittests.WebViewTestUtils.awaitJavascript;
 
 @RunWith(AndroidJUnit4.class)
 public class IFrameTest {
+    private static final String START_URL = "https://localhost/iframe/index.html";
 
-    private static final String START_URL = "file:///android_asset/www/iframe/index.html";
-    //I have no idea why we picked 100, but we did.
-    private static final int WEBVIEW_ID = 100;
-    private int WEBVIEW_LOAD_DELAY = 500;
-
-    private TestActivity testActivity;
-
-    // Don't launch the activity, we're going to send it intents
     @Rule
-    public ActivityTestRule mActivityRule = new ActivityTestRule<>(
-            TestActivity.class, true, false);
+    public ActivityTestRule<TestActivity> activityRule = new ActivityTestRule<>(TestActivity.class, true, false);
 
-    @Before
-    public void launchApplicationWithIntent() {
-        Intent intent = new Intent();
-        intent.putExtra("startUrl", START_URL);
-        testActivity = (TestActivity) mActivityRule.launchActivity(intent);
+    private void awaitFrame(TestActivity activity, String page) throws Throwable {
+        awaitJavascript(activityRule, activity,
+                "document.getElementById('iframe').contentWindow.location.pathname === '/iframe/" + page + "'");
+        activityRule.runOnUiThread(() -> assertEquals(START_URL, activity.getWebInterface().getUrl()));
     }
 
     @Test
     public void iFrameHistory() throws Throwable {
-        final CordovaWebView cordovaWebView = (CordovaWebView) testActivity.getWebInterface();
-        onWebView().withElement(findElement(Locator.ID, "google_maps")).perform(webClick());
-        sleep(WEBVIEW_LOAD_DELAY);
-        mActivityRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run()
-            {
-                String url = cordovaWebView.getUrl();
-                assertTrue(url.endsWith("index.html"));
-            }
-        });
-        sleep(WEBVIEW_LOAD_DELAY);
-        onWebView().withElement(findElement(Locator.ID, "javascript_load")).perform(webClick());
-        mActivityRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run()
-            {
-                String url = cordovaWebView.getUrl();
-                assertTrue(url.endsWith("index.html"));
-            }
-        });
-        sleep(WEBVIEW_LOAD_DELAY);
-        //Espresso will kill the application and not trigger the backHistory method, which correctly
-        //navigates the iFrame history.  backHistory is tied to the back button.
-        mActivityRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run()
-            {
-                assertTrue(cordovaWebView.backHistory());
-                String url = cordovaWebView.getUrl();
-                assertTrue(url.endsWith("index.html"));
-                assertFalse(cordovaWebView.backHistory());
-            }
-        });
+        Intent intent = new Intent();
+        intent.putExtra("startUrl", START_URL);
+        TestActivity activity = activityRule.launchActivity(intent);
+        awaitPageFinished(activity, START_URL);
 
+        clickElement(activityRule, activity, "first_page");
+        awaitFrame(activity, "frame1.html");
+        clickElement(activityRule, activity, "second_page");
+        awaitFrame(activity, "index2.html");
+        activityRule.runOnUiThread(() -> assertTrue(activity.getWebInterface().backHistory()));
+        awaitFrame(activity, "frame1.html");
+        activityRule.runOnUiThread(() -> assertFalse(activity.getWebInterface().backHistory()));
     }
-
-
-    //BRUTE FORCE THE CRAP OUT OF CONCURRENCY ERRORS
-    private void sleep(int timeout) {
-        try {
-            Thread.sleep(timeout);
-        } catch (InterruptedException e) {
-            fail("Unexpected Timeout");
-        }
-    }
-
 }

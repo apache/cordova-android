@@ -57,6 +57,36 @@ public interface CordovaWebView {
 
     boolean backHistory();
 
+    /**
+     * Performs Cordova's handling of a single Android back action.
+     *
+     * <p>A back press can reach Cordova in two ways:</p>
+     * <ul>
+     *   <li>As a back-press callback. Cordova's {@link CoreAndroid} plugin registers one
+     *       while the back button is overridden, that is while a JavaScript "backbutton"
+     *       listener exists, and calls this method from it.</li>
+     *   <li>As a back key event, handled by the web view's key event handling. This
+     *       also works without a "backbutton" listener.</li>
+     * </ul>
+     * <p>Depending on the Android version, one back press may arrive through one or both
+     * ways. The implementation makes sure that the press is handled only once.</p>
+     *
+     * <p>Android invokes the back-press callback on the UI thread. This method does not
+     * switch threads itself, so any other caller must also call it on the UI thread.</p>
+     *
+     * <p>The first applicable action is performed, in this order:</p>
+     * <ol>
+     *   <li>Dismiss a custom view, such as a full-screen video.</li>
+     *   <li>Fire the JavaScript "backbutton" event, if the back button is overridden.</li>
+     *   <li>Navigate back in the WebView history, if possible.</li>
+     * </ol>
+     *
+     * @return true if one of these actions was performed and the back action is consumed.
+     *         false if Cordova did nothing, so the caller should let Android handle the
+     *         back action, for example by finishing the activity.
+     */
+    boolean handleBackButton();
+
     void handlePause(boolean keepRunning);
 
     void onNewIntent(Intent intent);

@@ -20,8 +20,11 @@
 package org.apache.cordova.unittests;
 
 import android.content.Intent;
+import android.os.SystemClock;
+import android.view.KeyEvent;
+import android.view.View;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.apache.cordova.CordovaWebView;
 import org.junit.Before;
@@ -29,58 +32,43 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.pressBack;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.web.sugar.Web.onWebView;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 
-import static org.apache.cordova.unittests.R.id.cordovaWebView;
+import static org.apache.cordova.unittests.WebViewTestUtils.awaitPageFinished;
+import static org.apache.cordova.unittests.WebViewTestUtils.clickElement;
+import static org.apache.cordova.unittests.WebViewTestUtils.awaitJavascript;
 
 
 @RunWith(AndroidJUnit4.class)
 public class BackButtonMultipageTest {
 
-    private static final String START_URL = "file:///android_asset/www/backbuttonmultipage/index.html";
-    private static final String SAMPLE3_URL = "file:///android_asset/www/backbuttonmultipage/sample3.html";
-    private static final String SAMPLE2_URL = "file:///android_asset/www/backbuttonmultipage/sample2.html";
-    //I have no idea why we picked 100, but we did.
-    private static final int WEBVIEW_ID = 100;
+    private static final String START_URL = "https://localhost/backbuttonmultipage/index.html";
+    private static final String SAMPLE3_URL = "https://localhost/backbuttonmultipage/sample3.html";
+    private static final String SAMPLE2_URL = "https://localhost/backbuttonmultipage/sample2.html";
     private TestActivity mActivity;
 
     // Don't launch the activity, we're going to send it intents
     @Rule
-    public ActivityTestRule mActivityRule = new ActivityTestRule<>(
+    public ActivityTestRule<TestActivity> mActivityRule = new ActivityTestRule<>(
             TestActivity.class, true, false);
 
     @Before
     public void launchApplicationWithIntent() {
         Intent intent = new Intent();
         intent.putExtra("startUrl", START_URL);
-        mActivity = (TestActivity) mActivityRule.launchActivity(intent);
+        mActivity = mActivityRule.launchActivity(intent);
     }
 
     @Test
     public void testViaHref() throws Throwable {
         final CordovaWebView webInterface = mActivity.getWebInterface();
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+        assertPageSample(START_URL);
 
-        mActivityRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webInterface.sendJavascript("window.location = 'sample2.html';");
-            }
-        });
+        clickElement(mActivityRule, mActivity, "next_page");
         assertPageSample(SAMPLE2_URL);
-        mActivityRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webInterface.sendJavascript("window.location = 'sample3.html';");
-            }
-        });
+        clickElement(mActivityRule, mActivity, "next_page");
         assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             @Override
@@ -95,7 +83,7 @@ public class BackButtonMultipageTest {
                 assertTrue(webInterface.backHistory());
             }
         });
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+        assertPageSample(START_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -107,7 +95,7 @@ public class BackButtonMultipageTest {
     @Test
     public void testViaLoadUrl() throws Throwable {
         final CordovaWebView webInterface = mActivity.getWebInterface();
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+        assertPageSample(START_URL);
 
         mActivityRule.runOnUiThread(new Runnable() {
             @Override
@@ -136,7 +124,7 @@ public class BackButtonMultipageTest {
                 assertTrue(webInterface.backHistory());
             }
         });
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+        assertPageSample(START_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -148,7 +136,7 @@ public class BackButtonMultipageTest {
     @Test
     public void testViaBackButtonOnView() throws Throwable {
         final CordovaWebView webInterface = mActivity.getWebInterface();
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+        assertPageSample(START_URL);
 
         mActivityRule.runOnUiThread(new Runnable() {
             @Override
@@ -164,13 +152,28 @@ public class BackButtonMultipageTest {
             }
         });
         assertPageSample(SAMPLE3_URL);
-        onView(withId(WEBVIEW_ID)).perform(pressBack());
+        pressBackOnWebView();
         assertPageSample(SAMPLE2_URL);
-        onView(withId(WEBVIEW_ID)).perform(pressBack());
-        assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+        pressBackOnWebView();
+        assertPageSample(START_URL);
     }
 
-    private void assertPageSample(String url) {
-        assertEquals(url, mActivity.onPageFinishedUrl.take());
+    private void pressBackOnWebView() throws Throwable {
+        mActivityRule.runOnUiThread(() -> {
+            View view = mActivity.getWebInterface().getView();
+            long time = SystemClock.uptimeMillis();
+            // Espresso's global Back action can finish the activity through the
+            // system dispatcher. This test specifically covers WebView key handling.
+            assertTrue(view.dispatchKeyEvent(new KeyEvent(time, time,
+                    KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0)));
+            assertTrue(view.dispatchKeyEvent(new KeyEvent(time, time,
+                    KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, 0)));
+        });
+    }
+
+    private void assertPageSample(String url) throws Throwable {
+        awaitPageFinished(mActivity, url);
+        awaitJavascript(mActivityRule, mActivity,
+                "document.getElementById('deviceready').textContent === 'fired'");
     }
 }
