@@ -242,7 +242,7 @@ describe('target', () => {
             installTarget = { id: 'emulator-5556', type: 'emulator', arch: 'atari' };
 
             manifest = jasmine.createSpyObj('manifestStub', ['getActivity']);
-            manifest.getActivity.and.returnValue(jasmine.createSpyObj('Activity', ['getName']));
+            manifest.getActivity.and.returnValue(jasmine.createSpyObj('Activity', { getName: 'MainActivity' }));
 
             cordovaGradleConfigParser = jasmine.createSpyObj('cordovaGradleConfigParserStub', ['getPackageName']);
             cordovaGradleConfigParser.getPackageName.and.returnValue('unittestapp');
@@ -325,6 +325,32 @@ describe('target', () => {
 
             return target.install(installTarget, appSpec).then(() => {
                 expect(AdbSpy.start).toHaveBeenCalledWith(installTarget.id, `${packageId}/.${activityName}`);
+            });
+        });
+
+        describe('launch component name', () => {
+            const packageId = 'com.example.myapp';
+
+            beforeEach(() => {
+                cordovaGradleConfigParser.getPackageName.and.returnValue(packageId);
+            });
+
+            const cases = [
+                ['a simple class name', 'MainActivity', `${packageId}/.MainActivity`],
+                ['a name relative to the package', '.MainActivity', `${packageId}/.MainActivity`],
+                ['a relative name in a sub-package', '.sub.MainActivity', `${packageId}/.sub.MainActivity`],
+                ['a fully qualified name in the app package', `${packageId}.MainActivity`, `${packageId}/${packageId}.MainActivity`],
+                ['a fully qualified name outside the app package', 'com.other.package.MainActivity', `${packageId}/com.other.package.MainActivity`]
+            ];
+
+            cases.forEach(([description, activityName, expected]) => {
+                it(`should resolve ${description}`, () => {
+                    manifest.getActivity().getName.and.returnValue(activityName);
+
+                    return target.install(installTarget, appSpec).then(() => {
+                        expect(AdbSpy.start).toHaveBeenCalledWith(installTarget.id, expected);
+                    });
+                });
             });
         });
     });
