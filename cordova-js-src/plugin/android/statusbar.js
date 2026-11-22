@@ -27,9 +27,15 @@ const statusBarScript = document.createElement('script');
 document.head.appendChild(statusBarScript);
 
 /**
- * Sets the visibility of the status bar, which will only work if Android EdgeToEdge is disabled.
- * If cordova-plugin-statusbar is used, the call will be forwarded to `window.StatusBar.show` or
- * `window.StatusBar.hide` of the plugin.
+ * Gets or sets the visibility of the system status bar. Assign true to show it
+ * or false to hide it.
+ *
+ * The getter returns the last value assigned in JavaScript (initially true).
+ * If cordova-plugin-statusbar is installed, reads use window.StatusBar.isVisible
+ * and writes call window.StatusBar.show() or window.StatusBar.hide().
+ *
+ * The built-in implementation also works in edge-to-edge mode. Android can
+ * temporarily reveal the hidden status bar on a swipe from the top.
  */
 Object.defineProperty(statusBar, 'visible', {
     configurable: false,
@@ -58,19 +64,17 @@ Object.defineProperty(statusBar, 'visible', {
 });
 
 /**
- * Sets the background color of the visible status bar.
- * Supports valid CSS color values, e.g. `rebeccapurple`, `#RRGGBBAA`, `rgb(255 0 153)`.
+ * Sets the status bar background color. Accepts CSS colors that the web view
+ * computes as rgb() or rgba(), such as rebeccapurple, #RRGGBBAA, or rgb(255 0 153).
  *
- * On Android, when the preference `AndroidEdgeToEdge` is `true`, this may not produce
- * a visible status bar background fill, but can still be used to set the
- * light/dark status bar appearance.
+ * In edge-to-edge mode (AndroidEdgeToEdge is true), the built-in API uses the
+ * color to choose light or dark status bar text and icons. The app's content
+ * provides the background behind the status bar.
  *
- * Note: Runtime support for all valid CSS color formats is fully functional since
- * cordova-android 15.1.0.
- *
- * If cordova-plugin-statusbar is installed, calls are forwarded to the plugin API:
- * `window.StatusBar.backgroundColorByHexString`
- * See {@link https://s.apache.org/cdv-plugin-statusbar} for cordova-plugin-statusbar details.
+ * The built-in API handles CSS alpha values correctly since cordova-android
+ * 15.1.0. If cordova-plugin-statusbar is installed, the color is converted to
+ * #AARRGGBB and passed to window.StatusBar.backgroundColorByHexString().
+ * Fractional alpha values are rounded to an 8-bit value before forwarding.
  */
 Object.defineProperty(statusBar, 'setBackgroundColor', {
     configurable: false,
