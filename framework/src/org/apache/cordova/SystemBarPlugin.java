@@ -95,9 +95,8 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     /**
-     * Allow the app to override the status bar visibility from JS API.
-     * If for some reason the statusBarView could not be discovered, it will silently ignore
-     * the change request
+     * Shows or hides the Android system status bar and updates Cordova's status bar
+     * background view when present.
      *
      * @param visible should the status bar be visible?
      */
