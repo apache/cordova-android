@@ -206,9 +206,7 @@ public class SystemWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
-        // Flush stale messages & reset plugins.
-        parentEngine.bridge.reset();
-        parentEngine.client.onPageStarted(url);
+        parentEngine.onPageStarted(url);
     }
 
     /**
