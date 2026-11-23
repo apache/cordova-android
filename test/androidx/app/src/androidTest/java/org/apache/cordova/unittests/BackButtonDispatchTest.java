@@ -31,12 +31,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.apache.cordova.CoreAndroid;
 import org.apache.cordova.CordovaInterfaceImpl;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebViewImpl;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,7 +197,7 @@ public class BackButtonDispatchTest {
             assertTrue("History size=" + webView.copyBackForwardList().getSize()
                     + ", index=" + webView.copyBackForwardList().getCurrentIndex()
                     + ", URL=" + webView.getUrl(), activity.getWebInterface().canGoBack());
-            assertTrue(activity.getWebInterface().handleBackButton());
+            assertTrue(callInternalBackHandler());
         });
         // Evaluating JavaScript while the back navigation is still in progress can lose the result.
         assertEquals("https://localhost/backbuttondispatch/index.html",
@@ -210,9 +212,19 @@ public class BackButtonDispatchTest {
         removeBackListener();
         activityRule.runOnUiThread(() -> {
             assertFalse(activity.getWebInterface().canGoBack());
-            assertFalse(activity.getWebInterface().handleBackButton());
+            assertFalse(callInternalBackHandler());
         });
         assertEventCount(0);
+    }
+
+    private boolean callInternalBackHandler() {
+        try {
+            Method handler = CordovaWebViewImpl.class.getDeclaredMethod("handleBackButton");
+            handler.setAccessible(true);
+            return (Boolean) handler.invoke(activity.getWebInterface());
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
     private void removeBackListener() throws Throwable {
