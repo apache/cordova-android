@@ -28,11 +28,19 @@ import android.webkit.WebView;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.apache.cordova.CoreAndroid;
+import org.apache.cordova.CordovaInterfaceImpl;
+import org.apache.cordova.CordovaWebView;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,6 +97,45 @@ public class BackButtonDispatchTest {
         });
         assertEventCount(1);
         assertFalse(activity.isFinishing());
+    }
+
+    @Test
+    public void customWebViewReceivesLegacyBackKeyEvents() throws Throwable {
+        activityRule.runOnUiThread(() -> {
+            List<Integer> actions = new ArrayList<>();
+            View customView = new View(activity) {
+                @Override
+                public boolean dispatchKeyEvent(KeyEvent event) {
+                    assertEquals(KeyEvent.KEYCODE_BACK, event.getKeyCode());
+                    actions.add(event.getAction());
+                    return event.getAction() == KeyEvent.ACTION_DOWN;
+                }
+            };
+            CordovaWebView customWebView = (CordovaWebView) Proxy.newProxyInstance(
+                    CordovaWebView.class.getClassLoader(), new Class<?>[] { CordovaWebView.class },
+                    (proxy, method, args) -> {
+                        switch (method.getName()) {
+                            case "getView":
+                                return customView;
+                            case "setButtonPlumbedToJs":
+                                return null;
+                            default:
+                                throw new AssertionError("Unexpected WebView call: " + method.getName());
+                        }
+                    });
+            CoreAndroid core = new CoreAndroid();
+            core.cordova = new CordovaInterfaceImpl(activity);
+            core.webView = customWebView;
+
+            core.overrideBackbutton(true);
+            try {
+                activity.getOnBackPressedDispatcher().onBackPressed();
+                assertEquals(Arrays.asList(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP), actions);
+            } finally {
+                core.overrideBackbutton(false);
+            }
+        });
+        assertEventCount(0);
     }
 
     /** Separate back presses in quick succession are all handled, none is dropped as a duplicate. */

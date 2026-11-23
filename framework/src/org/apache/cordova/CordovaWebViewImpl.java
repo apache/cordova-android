@@ -413,8 +413,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
      * Called by the Android back-press callback. Performs the back action and, if it was
      * handled, records the time so the duplicate key event of the same press is ignored.
      */
-    @Override
-    public boolean handleBackButton() {
+    boolean handleBackButton() {
         long callbackTime = SystemClock.uptimeMillis();
         boolean handled = performBackButtonAction();
         if (handled) {

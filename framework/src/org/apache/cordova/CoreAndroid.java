@@ -29,6 +29,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.SystemClock;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
@@ -301,9 +302,11 @@ public class CoreAndroid extends CordovaPlugin {
      * handles it.</p>
      */
     private void handleBackPressed() {
-        // Let Cordova handle the back press first: close a custom view, fire the JS
-        // "backbutton" event, or go back in the WebView history. If it did, we are done.
-        if (webView.handleBackButton()) {
+        // TODO(#2053): Move the back-button handler to the public interface in the next major release.
+        boolean handled = webView instanceof CordovaWebViewImpl
+                ? ((CordovaWebViewImpl) webView).handleBackButton()
+                : dispatchBackKeyEvents();
+        if (handled) {
             return;
         }
 
@@ -315,6 +318,16 @@ public class CoreAndroid extends CordovaPlugin {
         } finally {
             backCallback.setEnabled(true);
         }
+    }
+
+    private boolean dispatchBackKeyEvents() {
+        // Preserve the key-event dispatch used by custom WebViews in 15.1.0.
+        final long eventTime = SystemClock.uptimeMillis();
+        final KeyEvent downEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
+        final KeyEvent upEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, 0);
+        final boolean handledDown = webView.getView().dispatchKeyEvent(downEvent);
+        final boolean handledUp = webView.getView().dispatchKeyEvent(upEvent);
+        return handledDown || handledUp;
     }
 
     /**
